@@ -1,3 +1,5 @@
+;;;;;;; Toys
+
 (define atom?
   (lambda (x)
     (and (not (null? x)) (not (pair? x)))))
@@ -6,6 +8,24 @@
 (atom? '(f (g h)))  ; false
 
 (null? ())  ; true
+
+; The Law of Car
+;   The primitive `car` is defined only for non-empty lists.
+
+; The Law of Cdr
+;   The primitive `cdr` is defined only for non-empty lists.
+;   The `cdr` of any non-empty list is always another list.
+
+; The Law of Cons
+;   The primitive `cons` takes two arguments. The second
+;   argument to `cons` must be a list. The result is a list.
+
+; The Law of Null?
+;   The primitive `null?` is defined only for lists.
+
+; The Law of Eq?
+;   The primitive `eq?` takes two atguments. Each must be
+;   a non-numeric atom.
 
 ;;;;;;; Do it, do it again, and again, and again ...
 
@@ -29,7 +49,7 @@
 (member? 'd '(a g))   ; false
 
 ; The First Commandment (preliminary):
-;   Always ask `null?` as the first questionm in expressing any function,
+;   Always ask `null?` as the first questionm in expressing any function.
 
 ;;;;;;; Cons the Magnificent
 
@@ -47,7 +67,7 @@
 (rember 'a ())			      ; ()
 
 ; The Second Commandment
-;   Use `cons` to build lists
+;   Use `cons` to build lists.
 
 
 (define firsts
@@ -73,4 +93,4 @@
 
 ; The Third Commandment
 ;   When building a list, describe the first typical element,
-;   and then `cons` it onto the natural recursion
+;   and then `cons` it onto the natural recursion.
