@@ -49,7 +49,9 @@
 (member? 'd '(a d g)) ; true
 (member? 'd '(a g))   ; false
 
-; The First Commandment (preliminary):
+; The First Commandment
+;     (preliminary):
+;
 ;   Always ask `null?` as the first questionm in expressing any function.
 
 
@@ -69,6 +71,7 @@
 (rember 'a ())			      ; ()
 
 ; The Second Commandment
+;
 ;   Use `cons` to build lists.
 
 (define firsts
@@ -92,6 +95,7 @@
 (seconds '(((a b) c) (d e) (f (g h))))    ; (c e (g h)))
 
 ; The Third Commandment
+;
 ;   When building a list, describe the first typical element,
 ;   and then `cons` it onto the natural recursion.
 
@@ -203,7 +207,86 @@
 (multisubst 'c 'b ())		 	      ; ()
 
 ; The Fourth Commandment
+;
 ;   Always change at least one argument while recurring. It
 ;   must be changed to be closer to termination. The changing
 ;   argument must be tested in the termination condition:
 ;   when using `cdr`, test termination with `null?`.
+
+
+;;;;;;; Numbers Games
+
+(define add1
+  (lambda (n) (+ n 1)))
+
+(add1 5)  ; 6
+
+(define sub1
+  (lambda (n) (- n 1)))
+
+(sub1 5)  ; 4
+
+(define add
+  (lambda (a b)
+    (cond
+      ((zero? b) a)
+      (else (add (add1 a) (sub1 b))))))
+
+(add 46 12) ; 58
+
+(define sub
+  (lambda (a b)
+    (cond
+      ((zero? b) a)
+      (else (sub (sub1 a) (sub1 b))))))
+
+(sub 14 3)  ; 11
+
+; The First Commandment
+;     (first revision)
+;
+;   When recurring on a list of atoms, `lat`, ask two questions
+;   about it: `(null? lat)` and else.
+;   When recurring on a number, `n`, ask two questions about
+;   it: `(zero? n)` and else.
+
+(define addtup
+  (lambda (tup)
+    (cond
+      ((null? tup) 0)
+      (else (add (car tup) (addtup (cdr tup)))))))
+
+(addtup '(1 2 3 4)) ; 10
+(addtup ())         ; 0
+
+; The Fourth Commandmenr
+;     (first revision)
+;
+;   Always change at least one argument while recurring. It
+;   must be changed ti be closer to termination. The changing
+;   argument must be tested in the termination condition:
+;   when using `cdr`, test termination with `null?` and
+;   when testing `sub1`, test termination with `zero?`.
+
+(define times
+  (lambda (n m)
+    (cond
+      ((zero? m) 0)
+      (else (add n (times n (sub1 m)))))))
+
+(times 13 4)  ; 52
+(times 13 0)  ; 0
+(times 0 13)  ; 0
+(times 1 13)  ; 13
+(times 13 1)  ; 13
+
+; The Fifth Commandment
+;
+;   When building a value with `add`, always use 0 for the value of the
+;   terminating line, for adding 0 does not change the value of an
+;   addition.
+;   When building a value with `times`, always use 1 for the value of the
+;   terminating line, for multiplying with 1 does not change the value
+;   of a multiplication.
+;   When building a value with `cons`, always consider () for the value
+;   of the terminating line.
