@@ -295,3 +295,160 @@
 ;   of a multiplication.
 ;   When building a value with `cons`, always consider () for the value
 ;   of the terminating line.
+
+(define tup+
+  (lambda (tup1 tup2)
+    (cond
+      ((null? tup1) tup2)
+      ((null? tup2) tup1)
+      (else (cons (add (car tup1) (car tup2)) (tup+ (cdr tup1) (cdr tup2)))))))
+
+(tup+ '(3 6 9 11 4) '(8 5 2 0 7)) ; (11 11 11 11 11)
+(tup+ '(3 7) '(4 6 8 1))          ; (7 13 8 1)
+(tup+ '(3 7 8 1) '(4 6))          ; (7 13 8 1)
+(tup+ () ())                      ; ()
+
+(define gt
+  (lambda (m n)
+    (cond
+      ((zero? m) #f)
+      ((zero? n) #t)
+      (else (gt (sub1 m) (sub1 n))))))
+
+(gt 12 120) ; false
+(gt 12 12)  ; false
+(gt 120 12) ; true
+
+(define lt
+  (lambda (m n)
+    (gt n m)))
+
+(lt 4 44) ; true
+(lt 2 2)  ; false
+(lt 44 4) ; false
+
+(define equals
+  (lambda (m n)
+    (cond
+      ((or (gt m n) (lt m n)) #f)
+      (else #t))))
+
+(equals 4 44) ; false
+(equals 44 4) ; false
+(equals 4 4)  ; true
+
+(define pow
+  (lambda (m n)
+    (cond
+      ((zero? n) 1)
+      (else (times m (pow m (sub1 n)))))))
+
+(pow 1 1) ; 1
+(pow 2 3) ; 8
+(pow 5 3) ; 125
+
+(define div
+  (lambda (m n)
+    (cond
+      ((lt m n) 0)
+      (else (add1 (div (sub m n) n))))))
+
+(div 15 4)  ; 3
+
+(define length
+  (lambda (lat)
+    (cond
+      ((null? lat) 0)
+      (else (add1 (length (cdr lat)))))))
+
+(length '(a b c d)) ; 4
+(length ())         ; 0
+
+(define pick
+  (lambda (index lat)
+    (cond
+      ((zero? (sub1 index)) (car lat))
+      ((zero? index) ())
+      (else (pick (sub1 index) (cdr lat))))))
+
+(pick 3 '(a b c d e)) ; c
+(pick 0 '(a))         ; ()
+
+(define rempick
+  (lambda (index lat)
+    (cond
+      ((lt (length lat) index) ())
+      ((null? lat) ())
+      ((zero? (sub1 index)) (cdr lat))
+      (else (cons (car lat) (rempick (sub1 index) (cdr lat)))))))
+
+(rempick 3 '(a b c d e))  ; (a b d e)
+(rempick 9 '(a b c d e))  ; ()
+(rempick 2 ())            ; ()
+
+(define no-nums
+  (lambda (lat)
+    (cond
+      ((null? lat) ())
+      ((number? (car lat)) (no-nums (cdr lat)))
+      (else (cons (car lat) (no-nums (cdr lat)))))))
+
+(no-nums '(5 pears 6 prunes 9 dates)) ; (pears prunes dates)
+(no-nums '(5 6 7))                    ; ()
+(no-nums ())                          ; ()
+
+(define all-nums
+  (lambda (lat)
+    (cond
+      ((null? lat) ())
+      ((number? (car lat)) (cons (car lat) (all-nums (cdr lat))))
+      (else (all-nums (cdr lat))))))
+
+(all-nums '(5 pears 6 prunes 9 dates))  ; (5 6 9)
+(all-nums '(5 6 7))                     ; (5 6 7)
+(all-nums ())                           ; ()
+
+(define eqan?
+  (lambda (a1 a2)
+    (cond
+      ((and (number? a1) (number? a2)) (equals a1 a2))
+      ((and (atom? a1) (atom? a2)) (eq? a1 a2))
+      (else #f))))
+
+(eqan? 'a 1)  ; false
+(eqan? 1 'a)  ; false
+(eqan? 1 3)   ; false
+(eqan? 'a 'b) ; false
+(eqan? 'a 'a) ; true
+(eqan? 1 1)   ; true
+
+(define occur
+  (lambda (a lat)
+    (cond
+      ((null? lat) 0)
+      ((eqan? a (car lat)) (add1 (occur a (cdr lat))))
+      (else (occur a (cdr lat))))))
+
+(occur 1 '(1 a 1 b 3 f 1))  ; 3
+(occur 1 ())                ; 0
+(occur 1 '(a b c d f))      ; 0
+
+(define one?
+  (lambda (n)
+    (eqan? a 1)))
+
+(one? 1)    ; true
+(one? 'one) ; false
+(one? 0)    ; false
+
+(define rempick-via-one
+  (lambda (index lat)
+    (cond
+      ((lt (length lat) index) ())
+      ((null? lat) ())
+      ((one? index) (cdr lat))
+      (else (cons (car lat) (rempick-via-one (sub1 index) (cdr lat)))))))
+
+(rempick-via-one 3 '(a b c d e))  ; (a b d e)
+(rempick-via-one 9 '(a b c d e))  ; ()
+(rempick-via-one 2 ())            ; ()
