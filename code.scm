@@ -466,8 +466,8 @@
           (else (cons (car l) (rember* a (cdr l))))))
       (else (cons (rember* a (car l)) (rember* a (cdr l)))))))
 
-(rember* 'cup '((coffee) cup ((tea) cup) (with (hick)) cup))                ; ((coffee) ((tea)) (with (hick)))
-(rember* 'sauce '(((tomato) sauce) ((bean) sauce) (with ((flying) sauce)))) ; (((tomato)) ((bean)) (with ((flying))))
+(rember* 'cup '((coffee) cup ((tea) cup) (and (hick)) cup))                ; ((coffee) ((tea)) (and (hick)))
+(rember* 'sauce '(((tomato) sauce) ((bean) sauce) (and ((flying) sauce)))) ; (((tomato)) ((bean)) (and ((flying))))
 
 (define insertR*
   (lambda (new old l)
@@ -491,3 +491,17 @@
 ;   it: `(zero? n)` and else
 ;   When recurring on a list of S-expressions, `l`, ask three
 ;   questions about it: `(null? l)`, `(atom? (car l))`, and else.
+
+; The Fourth Commandment
+;     (final version)
+;
+;   Always change at least one argument while recurring.
+;   When recurring on a list of atoms, `lat`, use `(cdr lat).
+;   When recurring on a number, `n`, use `(sub1 n)`. And when
+;   recurring on a list of S-expressions, `l`, use `(car l)` and
+;   `(cdr l)` if neither `(null? l)` nor `(atom? (car l))` are true.
+;
+;   It must be changed closer to be closer to termination. The
+;   changing argument must be tested in the termination condition:
+;   - when using `cdr`, test termination with `null?`, and
+;   - when using `sub1`, test termination with `zero?`.
