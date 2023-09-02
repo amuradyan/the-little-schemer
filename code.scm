@@ -327,15 +327,15 @@
 (lt 2 2)  ; false
 (lt 44 4) ; false
 
-(define equals
+(define equals?
   (lambda (m n)
     (cond
       ((or (gt m n) (lt m n)) #f)
       (else #t))))
 
-(equals 4 44) ; false
-(equals 44 4) ; false
-(equals 4 4)  ; true
+(equals? 4 44)  ; false
+(equals? 44 4)  ; false
+(equals? 4 4)   ; true
 
 (define pow
   (lambda (m n)
@@ -411,7 +411,7 @@
 (define eqan?
   (lambda (a1 a2)
     (cond
-      ((and (number? a1) (number? a2)) (equals a1 a2))
+      ((and (number? a1) (number? a2)) (equals? a1 a2))
       ((and (atom? a1) (atom? a2)) (eq? a1 a2))
       (else #f))))
 
@@ -505,3 +505,134 @@
 ;   changing argument must be tested in the termination condition:
 ;   - when using `cdr`, test termination with `null?`, and
 ;   - when using `sub1`, test termination with `zero?`.
+
+(define occur*
+  (lambda (a l)
+    (cond
+      ((null? l) 0)
+      ((atom? (car l))
+        (cond
+          ((eqan? a (car l)) (add1 (occur* a (cdr l))))
+          (else (occur* a (cdr l)))))
+      (else (add (occur* a (car l)) (occur* a (cdr l)))))))
+
+(occur* 'a '(a ((b) a) (c d (a) a) (a)))  ; 5
+(occur* 'a ())                            ; 0
+(occur* 'a '(b (c d (e (f)) g)))          ; 0
+
+(define subst*
+  (lambda (new old l)
+    (cond
+      ((null? l) ())
+      ((atom? (car l))
+        (cond
+          ((eqan? old (car l)) (cons new (subst* new old (cdr l))))
+          (else (cons (car l) (subst* new old (cdr l))))))
+      (else (cons (subst* new old (car l)) (subst* new old (cdr l)))))))
+
+(subst* 'b 'a '(a (((a) b) c) (b (a) ((a) c)))) ; (b (((b) b) c) (b (b) ((b) c)))
+(subst* 'b 'a ())                               ; ()
+(subst* 'b 'a '(b (c (d (e) f) g) h))           ; (b (c (d (e) f) g) h)
+
+(define insertL*
+  (lambda (new old l)
+    (cond
+      ((null? l) ())
+      ((atom? (car l))
+        (cond
+          ((eqan? old (car l)) (cons new (cons old (insertL* new old (cdr l)))))
+          (else (cons old (insertL* new old (cdr l))))))
+      (else (cons (insertL* new old (car l)) (insertL* new old (cdr l)))))))
+
+(insertL* 'b 'a '(a (((a) b) c) (b (a) ((a) c)))) ; (b a (((b a) b) c) (b (b a) ((b a) c)))
+(insertL* 'b 'a ())                               ; ()
+(insertL* 'b 'a '(b (c (d (e) f) g) h))           ; (b (c (d (e) f) g) h)
+
+(define member*
+  (lambda (a l)
+    (cond
+      ((null? l) #f)
+      ((atom? (car l))
+        (cond
+          ((eqan? a (car l)) #t)
+          (else (member* a (cdr l)))))
+      (else (or (member* a (car l)) (member* a (cdr l)))))))
+
+(member* 'a '(a (((a) b) c) (b (a) ((a) c)))) ; true
+(member* 'a ())                               ; false
+(member* 'a '(b (c (d (e) f) g) h))           ; false
+
+(define leftmost
+  (lambda (l)
+    (cond
+      ((null? l) ())
+      ((atom? (car l)) (car l))
+      (else (leftmost (car l))))))
+
+(leftmost ())               ; ()
+(leftmost '(a b c))         ; a
+(leftmost '((a (b)) c))     ; a
+(leftmost '(() (a (b)) c))  ; ()
+
+; `eqlist?` without `equals?`
+; -----------------------------
+; (define eqlist?
+;   (lambda (l1 l2)
+;     (cond
+;       ((and (null? l1) (null? l2)) #t)
+;       ((atom? (car l1))
+;         (cond
+;           ((atom? (car l2)) (and (eqan? (car l1) (car l2)) (eqlist? (cdr l1) (cdr l2))))
+;           (else #f)))
+;       (else
+;         (cond
+;           ((atom? (car l2)) #f)
+;           (else (and (eqlist? (car l1) (car l2)) (eqlist? (cdr l1) (cdr l2)))))))))
+; -----------------------------
+; (eqlist? '(a (b)) '((a) b)) ; false
+; (eqlist? '(a (b)) '(a (b))) ; true
+; (eqlist? '(a b) '(a b))     ; true
+; (eqlist? () ())             ; true
+
+(define equal?
+  (lambda (sexp1 sexp2)
+    (cond
+      ((and (atom? sexp1) (atom? sexp2)) (eqan? sexp1 sexp2))
+      ((or (atom? sexp1) (atom? sexp2)) #f)
+      (else (eqlist? sexp1 sexp2)))))
+
+(equal? () ())              ; true
+(equal? 'a 'a)              ; true
+(equal? '(a b) '(a b))      ; true
+(equal? () 'a)              ; false
+(equal? 'a 'b)              ; false
+(equal? '(a (b)) '((a) b))  ; false
+
+(define eqlist?
+  (lambda (l1 l2)
+    (cond
+      ((and (null? l1) (null? l2)) #t)
+      ((or (null? l1) (null? l2)) #f)
+      (else (and (equal? (car l1) (car l2)) (equal? (cdr l1) (cdr l2)))))))
+
+(eqlist? '(a (b)) '((a) b)) ; false
+(eqlist? '(a (b)) '(a (b))) ; true
+(eqlist? '(a b) '(a b))     ; true
+(eqlist? () ())             ; true
+
+; The Sixth Commandment
+;
+;   Simplify only after the function is correct.
+
+(define rember-simplified
+  (lambda (s l)
+    (cond
+      ((null? l) ())
+      ((equal? s (car l)) (cdr l))
+      (else (cons (car l) (rember-simplified s (cdr l)))))))
+
+(rember-simplified 'a '(a b c))      ; (b c)
+(rember-simplified 'a '(a b a c))    ; (b a c)
+(rember-simplified 'a '(b a g a c))  ; (b g a c)
+(rember-simplified 'a '(f g))        ; (f g)
+(rember-simplified 'a ())            ; ()
