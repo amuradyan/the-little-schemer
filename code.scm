@@ -452,3 +452,42 @@
 (rempick-via-one 3 '(a b c d e))  ; (a b d e)
 (rempick-via-one 9 '(a b c d e))  ; ()
 (rempick-via-one 2 ())            ; ()
+
+
+;;;;;;; *Oh My Gawd*: It's Full of Stars
+
+(define rember*
+  (lambda (a l)
+    (cond
+      ((null? l) ())
+      ((atom? (car l))
+        (cond
+          ((eqan? a (car l)) (rember* a (cdr l)))
+          (else (cons (car l) (rember* a (cdr l))))))
+      (else (cons (rember* a (car l)) (rember* a (cdr l)))))))
+
+(rember* 'cup '((coffee) cup ((tea) cup) (with (hick)) cup))                ; ((coffee) ((tea)) (with (hick)))
+(rember* 'sauce '(((tomato) sauce) ((bean) sauce) (with ((flying) sauce)))) ; (((tomato)) ((bean)) (with ((flying))))
+
+(define insertR*
+  (lambda (new old l)
+    (cond
+      ((null? l) ())
+      ((atom? (car l))
+        (cond
+          ((eqan? old (car l)) (cons old (cons new (insertR* new old (cdr l)))))
+          (else (cons (car l) (insertR* new old (cdr l))))))
+      (else (cons (insertR* new old (car l)) (insertR* new old (cdr l)))))))
+
+(insertR* 'roast 'chuck '((how much (wood)) could ((a (wood) chuck)) (((chuck))) (if (a) ((wood chuck))) could chuck wood))
+; ((how much (wood)) could ((a (wood) chuck roast)) (((chuck roast))) (if (a) ((wood chuck roast))) could chuck roast wood)
+
+; The First Commandment
+;     (final version)
+;
+;   When recurring on a list of atoms, `lat`, ask two questions
+;   about it: `(null? lat) and else.
+;   When recurring on a number, `n`, ask two questions about
+;   it: `(zero? n)` and else
+;   When recurring on a list of S-expressions, `l`, ask three
+;   questions about it: `(null? l)`, `(atom? (car l))`, and else.
