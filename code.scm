@@ -435,7 +435,7 @@
 
 (define one?
   (lambda (n)
-    (eqan? a 1)))
+    (eqan? n 1)))
 
 (one? 1)    ; true
 (one? 'one) ; false
@@ -594,6 +594,18 @@
 ; (eqlist? '(a b) '(a b))     ; true
 ; (eqlist? () ())             ; true
 
+(define eqlist?
+  (lambda (l1 l2)
+    (cond
+      ((and (null? l1) (null? l2)) #t)
+      ((or (null? l1) (null? l2)) #f)
+      (else (and (equal? (car l1) (car l2)) (equal? (cdr l1) (cdr l2)))))))
+
+(eqlist? '(a (b)) '((a) b)) ; false
+(eqlist? '(a (b)) '(a (b))) ; true
+(eqlist? '(a b) '(a b))     ; true
+(eqlist? () ())             ; true
+
 (define equal?
   (lambda (sexp1 sexp2)
     (cond
@@ -607,18 +619,6 @@
 (equal? () 'a)              ; false
 (equal? 'a 'b)              ; false
 (equal? '(a (b)) '((a) b))  ; false
-
-(define eqlist?
-  (lambda (l1 l2)
-    (cond
-      ((and (null? l1) (null? l2)) #t)
-      ((or (null? l1) (null? l2)) #f)
-      (else (and (equal? (car l1) (car l2)) (equal? (cdr l1) (cdr l2)))))))
-
-(eqlist? '(a (b)) '((a) b)) ; false
-(eqlist? '(a (b)) '(a (b))) ; true
-(eqlist? '(a b) '(a b))     ; true
-(eqlist? () ())             ; true
 
 ; The Sixth Commandment
 ;
