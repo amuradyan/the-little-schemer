@@ -636,3 +636,25 @@
 (rember-simplified 'a '(b a g a c))  ; (b g a c)
 (rember-simplified 'a '(f g))        ; (f g)
 (rember-simplified 'a ())            ; ()
+
+
+;;;;;;; Shadows
+
+(define numbered?
+  (lambda (x)
+    (cond
+      ((null? x) #t)
+      ((number? x) #t)
+      ((atom? (car x))
+        (cond
+          ((number? (car x)) (numbered? (cdr x)))
+          ((equal? (car x) 'pow) (numbered? (cdr x)))
+          ((equal? (car x) 'add) (numbered? (cdr x)))
+          ((equal? (car x) 'mul) (numbered? (cdr x)))
+          (else #f)))
+      (else (and (numbered? (car x)) (numbered? (cdr x)))))))
+
+(numbered? 4)                             ; true
+(numbered? '(3 add (4 pow (5 mul 2))))    ; true
+(numbered? ())                            ; true
+(numbered? '(3 what? (4 pow (5 mul 2))))  ; false
