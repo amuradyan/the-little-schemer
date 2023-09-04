@@ -640,6 +640,11 @@
 
 ;;;;;;; Shadows
 
+; Below we assume the names for the following arithmetic operations:
+;   - plus for +
+;   - times for *
+;   - pow for ^
+
 (define numbered?
   (lambda (x)
     (cond
@@ -649,12 +654,174 @@
         (cond
           ((number? (car x)) (numbered? (cdr x)))
           ((equal? (car x) 'pow) (numbered? (cdr x)))
-          ((equal? (car x) 'add) (numbered? (cdr x)))
-          ((equal? (car x) 'mul) (numbered? (cdr x)))
+          ((equal? (car x) 'plus) (numbered? (cdr x)))
+          ((equal? (car x) 'times) (numbered? (cdr x)))
           (else #f)))
       (else (and (numbered? (car x)) (numbered? (cdr x)))))))
 
-(numbered? 4)                             ; true
-(numbered? '(3 add (4 pow (5 mul 2))))    ; true
-(numbered? ())                            ; true
-(numbered? '(3 what? (4 pow (5 mul 2))))  ; false
+(numbered? 4)                               ; true
+(numbered? '(3 plus (4 pow (5 times 2))))   ; true
+(numbered? ())                              ; true
+(numbered? '(3 what? (4 pow (5 times 2))))  ; false
+
+(define numbered?-per-book
+  (lambda (x)
+    (cond
+      ((atom? x) (number? x))
+      (else (and (numbered?-per-book (car x)) (numbered?-per-book (car (cdr (cdr x)))))))))
+
+
+(numbered?-per-book 4)                                ; true
+(numbered?-per-book '(3 plus (4 pow (5 times 2))))    ; true
+(numbered?-per-book ())                               ; true
+(numbered?-per-book '(3 what? (4 pow (5 times 2))))   ; false
+
+(define value
+  (lambda (nexp)
+    (cond
+      ((atom? nexp))
+      ((eq? (car (cdr (nexp))) 'plus) (add (value (car nexp) (value (cdr (cdr nexp))))))
+      ((eq? (car (cdr (nexp))) 'times) (times (value (car nexp) (value (cdr (cdr nexp))))))
+      (else (pow (value (car nexp)) (value (cdr (cdr nexp))))))))
+
+(value 3)                             ; 3
+(value '(3 plus 5))                   ; 8
+(value '(8 times 10))                 ; 80
+(value '(8 times (10 plus 1)))        ; 88
+(value '(2 plus (3 times (2 pow 2)))) ; 14
+
+; The Seventh Commandment
+;
+;   Recur on the `subparts` that are of the same nature:
+;   - On the sublists of a list
+;   - On the subexpressions of an arithmetic expression
+
+; First try before the appropriate abstractions
+;
+; (define prefix-value
+;   (lambda (aexp)
+;     (cond
+;       ((number? aexp) aexp)
+;       ((eq? (car aexp) 'plus) (add (value (car (cdr aexp))) (value (car (cdr (cdr aexp))))))
+;       ((eq? (car aexp) 'times) (times (value (car (cdr aexp))) (value (car (cdr (cdr aexp))))))
+;       (else (pow (value (car (cdr aexp))) (value (car (cdr (cdr aexp)))))))))
+
+; (prefix-value '(plus 3 4))                   ; 7
+; (prefix-value '(plus (times 3 2) (pow 4 2))) ; 22
+; (prefix-value '(times 5 (plus 2 3)))         ; 25
+
+(define 1st-sub-exp
+  (lambda (nexp)
+    (car (cdr nexp))))
+
+(1st-sub-exp '(plus 3 4))                   ; 3
+(1st-sub-exp '(plus (times 3 2) (pow 4 2))) ; (times 3 2)
+(1st-sub-exp '(times 5 (plus 2 3)))         ; 5
+
+(define 2nd-sub-exp
+  (lambda (nexp)
+    (car (cdr (cdr nexp)))))
+
+(2nd-sub-exp '(plus 3 4))                   ; 4
+(2nd-sub-exp '(plus (times 3 2) (pow 4 2))) ; (pow 4 2)
+(2nd-sub-exp '(times 5 (plus 2 3)))         ; (plus 2 3)
+
+(define operator
+  (lambda (aexp)
+    (car aexp)))
+
+(operator '(plus 3 4))                    ; plus
+(operator '(plus (times 3 2) (pow 4 2)))  ; plus
+(operator '(times 5 (plus 2 3)))          ; times
+
+(define prefix-value
+  (lambda (aexp)
+    (cond
+      ((number? aexp) aexp)
+      ((eq? (operator aexp) 'plus) (add (value (1st-sub-exp aexp)) (value (2nd-sub-exp aexp))))
+      ((eq? (operator aexp) 'times) (times (value (1st-sub-exp aexp)) (value (2nd-sub-exp aexp))))
+      (else (pow (value (1st-sub-exp aexp)) (value (2nd-sub-exp aexp)))))))
+
+(prefix-value '(plus 3 4))                   ; 7
+(prefix-value '(plus (times 3 2) (pow 4 2))) ; 22
+(prefix-value '(times 5 (plus 2 3)))         ; 25
+
+(define 1st-infix-sub-exp
+  (lambda (nexp)
+    (car nexp)))
+
+(1st-infix-sub-exp 3)                             ; 3
+(1st-infix-sub-exp '(3 plus 5))                   ; 3
+(1st-infix-sub-exp '(8 times 10))                 ; 8
+(1st-infix-sub-exp '(8 times (10 plus 1)))        ; 8
+(1st-infix-sub-exp '(2 plus (3 times (2 pow 2)))) ; 2
+
+(define 2nd-infix-sub-exp
+  (lambda (nexp)
+    (car (cdr (cdr nexp)))))
+
+(2nd-infix-sub-exp '(3 plus 5))                 ; 5
+(2nd-infix-sub-exp '(8 times 10))               ; 10
+(2nd-infix-sub-exp '(8 times (10 plus 1)))      ; (10 plus 1)
+(2nd-infix-sub-exp '(2 plus (3 times (2 pow 2)) ; (3 times (2 pow 2))
+
+(define infix-operator
+  (lambda (aexp)
+    (car (cdr aexp))))
+
+(infix-operator '(3 plus 5))                    ; plus
+(infix-operator '(8 times 10))                  ; times
+(infix-operator '(8 times (10 plus 1)))         ; times
+(infix-operator '(2 plus (3 times (2 pow 2))))  ; plus
+
+(define infix-value
+  (lambda (nexp)
+    (cond
+      ((atom? nexp) nexp)
+      ((eq? (infix-operator nexp) 'plus)
+        (add
+          (value (1st-infix-sub-exp nexp)
+          (value (2nd-infix-sub-exp nexp)))))
+      ((eq? (infix-operator nexp) 'times)
+        (times
+          (value (1st-infix-sub-exp nexp)
+          (value (2nd-infix-sub-exp nexp)))))
+      (else
+        (pow
+          (value (1st-infix-sub-exp nexp))
+          (value (2nd-infix-sub-exp nexp)))))))
+
+(infix-value 3)                             ; 3
+(infix-value '(3 plus 5))                   ; 8
+(infix-value '(8 times 10))                 ; 80
+(infix-value '(8 times (10 plus 1)))        ; 88
+(infix-value '(2 plus (3 times (2 pow 2)))) ; 14
+
+; The Eighth Commandment
+;
+;   Use help functions to abstract fom representations
+
+(define zro?
+  (lambda (n)
+    (null? n)))
+
+(zro? (()))  ; true
+
+(define pljusmek
+  (lambda (n)
+    (cons () n)))
+
+(pljusmek '(())) ; (() ())
+
+(define minusmek
+  (lambda (n)
+    (cdr n)))
+
+(minusmek '(() ())) ; (())
+
+(define gumar
+  (lambda (a b)
+    ((zro? b) a)
+    (else (pljusmek (gumar a (minusmek b))))))
+
+(gumar '(()) '(() ()))  ; (() () ())
