@@ -825,3 +825,36 @@
     (else (pljusmek (gumar a (minusmek b))))))
 
 (gumar '(()) '(() ()))  ; (() () ())
+
+
+;;;;;;; Friends and Relations
+
+(define member-via-equal?
+  (lambda (a lat)
+    (cond
+      ((null? lat) #f)
+      (else (or (equal? (car lat) a) (member? a (cdr lat)))))))
+
+(member-via-equal? 'd '(a d g)) ; true
+(member-via-equal? 'd '(a g))   ; false
+
+(define set?
+  (lambda (lat)
+    ((null? lat) #t)
+    ((member-via-equal? (car lat) (cdr lat)) #f)
+    (else (set? (cdr lat)))))
+
+(set? ())     ; true
+(set? a b c)  ; true
+(set? a b b)  ; false
+
+(define makeset
+  (lambda (lat)
+    (cond
+      ((null? lat) lat)
+      ((member? (car lat) (cdr lat)) (makeset (cdr lat)))
+      (else (cons (car lat) (makeset (cdr lat)))))))
+
+(makeset ())          ; ()
+(makeset '(a b a c))  ; (a b c)
+(makeset '(a b c))    ; (a b c)
