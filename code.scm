@@ -1,13 +1,25 @@
-;;;;;;; Toys
+(define header
+  (lambda (caption)
+    (newline)
+    (display caption)
+    (newline)
+    (newline)))
 
-(newline) (display "Toys") (newline) (newline)
+(define print
+  (lambda (sexp)
+    (display sexp)
+    (display " => ")
+    (display (eval sexp))
+    (newline)))
+
+(header "Toys")
 
 (define atom?
   (lambda (x)
     (and (not (null? x)) (not (pair? x)))))
 
-(display (atom? 'a)) (newline)         ; true
-(display (atom? '(f (g h)))) (newline) ; false
+(print '(atom? 'a))          ; true
+(print '(atom? '(f (g h))))  ; false
 
 ; The Law of Car
 ;
@@ -33,9 +45,7 @@
 ;   a non-numeric atom.
 
 
-; ;;;;;;; Do it, do it again, and again, and again ...
-
-(newline) (display "Do it, do it again, and again, and again ...") (newline) (newline)
+(header "Do it, do it again, and again, and again ...")
 
 (define lat?
   (lambda (x)
@@ -44,8 +54,8 @@
       ((atom? (car x)) (lat? (cdr x)))
       (else #f))))
 
-(lat? '())          ; true
-(lat? '((t g) r))   ; false
+(print '(lat? '()))          ; true
+(print '(lat? '((t g) r)))   ; false
 
 (define member?
   (lambda (a lat)
@@ -53,8 +63,8 @@
       ((null? lat) #f)
       (else (or (eq? (car lat) a) (member? a (cdr lat)))))))
 
-(member? 'd '(a d g)) ; true
-(member? 'd '(a g))   ; false
+(print '(member? 'd '(a d g))) ; true
+(print '(member? 'd '(a g)))   ; false
 
 ; The First Commandment
 ;     (preliminary)
@@ -64,7 +74,7 @@
 
 ;;;;;;; Cons the Magnificent
 
-(newline) (display "Cons the Magnificent") (newline) (newline)
+(header "Cons the Magnificent")
 
 (define rember
   (lambda (a lat)
@@ -73,11 +83,11 @@
       ((eq? a (car lat)) (cdr lat))
       (else (cons (car lat) (rember a (cdr lat)))))))
 
-(rember 'a '(a b c))      ; (b c)
-(rember 'a '(a b a c))    ; (b a c)
-(rember 'a '(b a g a c))  ; (b g a c)
-(rember 'a '(f g))        ; (f g)
-(rember 'a '())           ; ()
+(print '(rember 'a '(a b c)))      ; (b c)
+(print '(rember 'a '(a b a c)))    ; (b a c)
+(print '(rember 'a '(b a g a c)))  ; (b g a c)
+(print '(rember 'a '(f g)))        ; (f g)
+(print '(rember 'a '()))           ; ()
 
 ; The Second Commandment
 ;
@@ -89,9 +99,9 @@
       ((null? l) '())
       (else (cons (car (car l)) (firsts (cdr l)))))))
 
-(firsts '())                      ; ()
-(firsts '((a b) (c d) (e f)))     ; (a c e)
-(firsts '(((a b) c) (d e) (f)))   ; ((a b) d f)
+(print '(firsts '()))                      ; ()
+(print '(firsts '((a b) (c d) (e f))))     ; (a c e)
+(print '(firsts '(((a b) c) (d e) (f))))   ; ((a b) d f)
 
 (define seconds
   (lambda (l)
@@ -99,9 +109,9 @@
       ((null? l) '())
       (else (cons (car (cdr (car l))) (seconds (cdr l)))))))
 
-(seconds '())                             ; ()
-(seconds '((a b) (c d) (e f)))            ; (b d f)
-(seconds '(((a b) c) (d e) (f (g h))))    ; (c e (g h)))
+(print '(seconds '()))                             ; ()
+(print '(seconds '((a b) (c d) (e f))))            ; (b d f)
+(print '(seconds '(((a b) c) (d e) (f (g h)))))    ; (c e (g h)))
 
 ; The Third Commandment
 ;
@@ -117,9 +127,9 @@
         ((eq? (car lat) old) (cons old (cons new (cdr lat))))
         (else (cons (car lat) (insertR new old (cdr lat)))))))))
 
-(insertR 'c 'b '(a b d))     ; (a b c d)
-(insertR 'c 'b '(a b b d))   ; (a b c b d)
-(insertR 'c 'b '())          ; ()
+(print '(insertR 'c 'b '(a b d)))     ; (a b c d)
+(print '(insertR 'c 'b '(a b b d)))   ; (a b c b d)
+(print '(insertR 'c 'b '()))          ; ()
 
 (define insertL
   (lambda (new old lat)
@@ -130,9 +140,9 @@
         ((eq? (car lat) old) (cons new lat))
         (else (cons (car lat) (insertL new old (cdr lat)))))))))
 
-(insertL 'c 'b '(a b d))     ; (a c b d)
-(insertL 'c 'b '(a b b d))   ; (a c b b d)
-(insertL 'c 'b '())          ; ()
+(print '(insertL 'c 'b '(a b d)))     ; (a c b d)
+(print '(insertL 'c 'b '(a b b d)))   ; (a c b b d)
+(print '(insertL 'c 'b '()))          ; ()
 
 (define subst
   (lambda (new old lat)
@@ -143,9 +153,9 @@
         ((eq? (car lat) old) (cons new (cdr lat)))
         (else (cons (car lat) (subst new old (cdr lat)))))))))
 
-(subst 'c 'b '(a b d))     ; (a c d)
-(subst 'c 'b '(a b b d))   ; (a c b d)
-(subst 'c 'b '())          ; ()
+(print '(subst 'c 'b '(a b d)))     ; (a c d)
+(print '(subst 'c 'b '(a b b d)))   ; (a c b d)
+(print '(subst 'c 'b '()))          ; ()
 
 (define subst2
   (lambda (new o1 o2 lat)
@@ -158,10 +168,10 @@
         (else
           (cons (car lat) (subst2 new o1 o2 (cdr lat)))))))))
 
-(subst2 'c 'b 'd '(a b d))     ; (a c d)
-(subst2 'c 'b 'd '(a d b))     ; (a c b)
-(subst2 'c 'b 'd '(a b b d))   ; (a c b d)
-(subst2 'c 'b 'd '())          ; ()
+(print '(subst2 'c 'b 'd '(a b d)))     ; (a c d)
+(print '(subst2 'c 'b 'd '(a d b)))     ; (a c b)
+(print '(subst2 'c 'b 'd '(a b b d)))   ; (a c b d)
+(print '(subst2 'c 'b 'd '()))          ; ()
 
 (define multirember
   (lambda (a lat)
@@ -170,11 +180,11 @@
       ((eq? a (car lat)) (multirember a (cdr lat)))
       (else (cons (car lat) (multirember a (cdr lat)))))))
 
-(multirember 'a '(a b c))     ; (b c)
-(multirember 'a '(a b a c))   ; (b c)
-(multirember 'a '(b a g a c)) ; (b g c)
-(multirember 'a '(f g))       ; (f g)
-(multirember 'a '())          ; ()
+(print '(multirember 'a '(a b c)))     ; (b c)
+(print '(multirember 'a '(a b a c)))   ; (b c)
+(print '(multirember 'a '(b a g a c))) ; (b g c)
+(print '(multirember 'a '(f g)))       ; (f g)
+(print '(multirember 'a '()))          ; ()
 
 (define multiinsertR
   (lambda (new old lat)
@@ -185,9 +195,9 @@
         ((eq? (car lat) old) (cons old (cons new (multiinsertR new old (cdr lat)))))
         (else (cons (car lat) (multiinsertR new old (cdr lat)))))))))
 
-(multiinsertR 'c 'b '(a b d))     ; (a b c d)
-(multiinsertR 'c 'b '(a b b d))   ; (a b c b c d)
-(multiinsertR 'c 'b '())          ; ()
+(print '(multiinsertR 'c 'b '(a b d)))     ; (a b c d)
+(print '(multiinsertR 'c 'b '(a b b d)))   ; (a b c b c d)
+(print '(multiinsertR 'c 'b '()))          ; ()
 
 (define multiinsertL
   (lambda (new old lat)
@@ -198,9 +208,9 @@
         ((eq? (car lat) old) (cons new (cons old (multiinsertL new old (cdr lat)))))
         (else (cons (car lat) (multiinsertL new old (cdr lat)))))))))
 
-(multiinsertL 'c 'b '(a b d))     ; (a c b d)
-(multiinsertL 'c 'b '(a b b d))   ; (a c b c b d)
-(multiinsertL 'c 'b '())          ; ()
+(print '(multiinsertL 'c 'b '(a b d)))     ; (a c b d)
+(print '(multiinsertL 'c 'b '(a b b d)))   ; (a c b c b d)
+(print '(multiinsertL 'c 'b '()))          ; ()
 
 (define multisubst
   (lambda (new old lat)
@@ -211,9 +221,9 @@
         ((eq? (car lat) old) (cons new (multisubst new old (cdr lat))))
         (else (cons (car lat) (multisubst new old (cdr lat)))))))))
 
-(multisubst 'c 'b '(a b d))     ; (a c d)
-(multisubst 'c 'b '(a b b d))   ; (a c c d)
-(multisubst 'c 'b '())          ; ()
+(print '(multisubst 'c 'b '(a b d)))     ; (a c d)
+(print '(multisubst 'c 'b '(a b b d)))   ; (a c c d)
+(print '(multisubst 'c 'b '()))          ; ()
 
 ; The Fourth Commandment
 ;
@@ -225,17 +235,17 @@
 
 ; ;;;;;;; Numbers Games
 
-(newline) (display "Numbers Games") (newline) (newline)
+(header "Numbers Games")
 
 (define add1
   (lambda (n) (+ n 1)))
 
-(add1 5)  ; 6
+(print '(add1 5))  ; 6
 
 (define sub1
   (lambda (n) (- n 1)))
 
-(sub1 5)  ; 4
+(print '(sub1 5))  ; 4
 
 (define add
   (lambda (a b)
@@ -243,7 +253,7 @@
       ((zero? b) a)
       (else (add (add1 a) (sub1 b))))))
 
-(add 46 12) ; 58
+(print '(add 46 12)) ; 58
 
 (define sub
   (lambda (a b)
@@ -251,7 +261,7 @@
       ((zero? b) a)
       (else (sub (sub1 a) (sub1 b))))))
 
-(sub 14 3)  ; 11
+(print '(sub 14 3))  ; 11
 
 ; The First Commandment
 ;     (first revision)
@@ -267,8 +277,8 @@
       ((null? tup) 0)
       (else (add (car tup) (addtup (cdr tup)))))))
 
-(addtup '(1 2 3 4)) ; 10
-(addtup '())        ; 0
+(print '(addtup '(1 2 3 4))) ; 10
+(print '(addtup '()))        ; 0
 
 ; The Fourth Commandment
 ;     (first revision)
@@ -285,11 +295,11 @@
       ((zero? m) 0)
       (else (add n (times n (sub1 m)))))))
 
-(times 13 4)  ; 52
-(times 13 0)  ; 0
-(times 0 13)  ; 0
-(times 1 13)  ; 13
-(times 13 1)  ; 13
+(print '(times 13 4))  ; 52
+(print '(times 13 0))  ; 0
+(print '(times 0 13))  ; 0
+(print '(times 1 13))  ; 13
+(print '(times 13 1))  ; 13
 
 ; The Fifth Commandment
 ;
@@ -309,10 +319,10 @@
       ((null? tup2) tup1)
       (else (cons (add (car tup1) (car tup2)) (tup+ (cdr tup1) (cdr tup2)))))))
 
-(tup+ '(3 6 9 11 4) '(8 5 2 0 7)) ; (11 11 11 11 11)
-(tup+ '(3 7) '(4 6 8 1))          ; (7 13 8 1)
-(tup+ '(3 7 8 1) '(4 6))          ; (7 13 8 1)
-(tup+ '() '())                    ; ()
+(print '(tup+ '(3 6 9 11 4) '(8 5 2 0 7))) ; (11 11 11 11 11)
+(print '(tup+ '(3 7) '(4 6 8 1)))          ; (7 13 8 1)
+(print '(tup+ '(3 7 8 1) '(4 6)))          ; (7 13 8 1)
+(print '(tup+ '() '()))                    ; ()
 
 (define gt
   (lambda (m n)
@@ -321,17 +331,17 @@
       ((zero? n) #t)
       (else (gt (sub1 m) (sub1 n))))))
 
-(gt 12 120) ; false
-(gt 12 12)  ; false
-(gt 120 12) ; true
+(print '(gt 12 120)) ; false
+(print '(gt 12 12))  ; false
+(print '(gt 120 12)) ; true
 
 (define lt
   (lambda (m n)
     (gt n m)))
 
-(lt 4 44) ; true
-(lt 2 2)  ; false
-(lt 44 4) ; false
+(print '(lt 4 44)) ; true
+(print '(lt 2 2))  ; false
+(print '(lt 44 4)) ; false
 
 (define equals?
   (lambda (m n)
@@ -339,9 +349,9 @@
       ((or (gt m n) (lt m n)) #f)
       (else #t))))
 
-(equals? 4 44)  ; false
-(equals? 44 4)  ; false
-(equals? 4 4)   ; true
+(print '(equals? 4 44))  ; false
+(print '(equals? 44 4))  ; false
+(print '(equals? 4 4))   ; true
 
 (define pow
   (lambda (m n)
@@ -349,9 +359,9 @@
       ((zero? n) 1)
       (else (times m (pow m (sub1 n)))))))
 
-(pow 1 1) ; 1
-(pow 2 3) ; 8
-(pow 5 3) ; 125
+(print '(pow 1 1)) ; 1
+(print '(pow 2 3)) ; 8
+(print '(pow 5 3)) ; 125
 
 (define div
   (lambda (m n)
@@ -359,7 +369,7 @@
       ((lt m n) 0)
       (else (add1 (div (sub m n) n))))))
 
-(div 15 4)  ; 3
+(print '(div 15 4))  ; 3
 
 (define length
   (lambda (lat)
@@ -367,8 +377,8 @@
       ((null? lat) 0)
       (else (add1 (length (cdr lat)))))))
 
-(length '(a b c d)) ; 4
-(length '())        ; 0
+(print '(length '(a b c d))) ; 4
+(print '(length '()))        ; 0
 
 (define pick
   (lambda (index lat)
@@ -377,8 +387,8 @@
       ((zero? index) '())
       (else (pick (sub1 index) (cdr lat))))))
 
-(pick 3 '(a b c d e)) ; c
-(pick 0 '(a))         ; ()
+(print '(pick 3 '(a b c d e))) ; c
+(print '(pick 0 '(a)))         ; ()
 
 (define rempick
   (lambda (index lat)
@@ -388,9 +398,9 @@
       ((zero? (sub1 index)) (cdr lat))
       (else (cons (car lat) (rempick (sub1 index) (cdr lat)))))))
 
-(rempick 3 '(a b c d e))  ; (a b d e)
-(rempick 9 '(a b c d e))  ; ()
-(rempick 2 '())           ; ()
+(print '(rempick 3 '(a b c d e)))  ; (a b d e)
+(print '(rempick 9 '(a b c d e)))  ; ()
+(print '(rempick 2 '()))           ; ()
 
 (define no-nums
   (lambda (lat)
@@ -399,9 +409,9 @@
       ((number? (car lat)) (no-nums (cdr lat)))
       (else (cons (car lat) (no-nums (cdr lat)))))))
 
-(no-nums '(5 pears 6 prunes 9 dates)) ; (pears prunes dates)
-(no-nums '(5 6 7))                    ; ()
-(no-nums '())                         ; ()
+(print '(no-nums '(5 pears 6 prunes 9 dates))) ; (pears prunes dates)
+(print '(no-nums '(5 6 7)))                    ; ()
+(print '(no-nums '()))                         ; ()
 
 (define all-nums
   (lambda (lat)
@@ -410,9 +420,9 @@
       ((number? (car lat)) (cons (car lat) (all-nums (cdr lat))))
       (else (all-nums (cdr lat))))))
 
-(all-nums '(5 pears 6 prunes 9 dates))  ; (5 6 9)
-(all-nums '(5 6 7))                     ; (5 6 7)
-(all-nums '())                          ; ()
+(print '(all-nums '(5 pears 6 prunes 9 dates)))  ; (5 6 9)
+(print '(all-nums '(5 6 7)))                     ; (5 6 7)
+(print '(all-nums '()))                          ; ()
 
 (define eqan?
   (lambda (a1 a2)
@@ -421,12 +431,12 @@
       ((and (atom? a1) (atom? a2)) (eq? a1 a2))
       (else #f))))
 
-(eqan? 'a 1)  ; false
-(eqan? 1 'a)  ; false
-(eqan? 1 3)   ; false
-(eqan? 'a 'b) ; false
-(eqan? 'a 'a) ; true
-(eqan? 1 1)   ; true
+(print '(eqan? 'a 1))  ; false
+(print '(eqan? 1 'a))  ; false
+(print '(eqan? 1 3))   ; false
+(print '(eqan? 'a 'b)) ; false
+(print '(eqan? 'a 'a)) ; true
+(print '(eqan? 1 1))   ; true
 
 (define occur
   (lambda (a lat)
@@ -435,17 +445,17 @@
       ((eqan? a (car lat)) (add1 (occur a (cdr lat))))
       (else (occur a (cdr lat))))))
 
-(occur 1 '(1 a 1 b 3 f 1))  ; 3
-(occur 1 '())               ; 0
-(occur 1 '(a b c d f))      ; 0
+(print '(occur 1 '(1 a 1 b 3 f 1)))  ; 3
+(print '(occur 1 '()))               ; 0
+(print '(occur 1 '(a b c d f)))      ; 0
 
 (define one?
   (lambda (n)
     (eqan? n 1)))
 
-(one? 1)    ; true
-(one? 'one) ; false
-(one? 0)    ; false
+(print '(one? 1))    ; true
+(print '(one? 'one)) ; false
+(print '(one? 0))    ; false
 
 (define rempick-via-one
   (lambda (index lat)
@@ -455,14 +465,14 @@
       ((one? index) (cdr lat))
       (else (cons (car lat) (rempick-via-one (sub1 index) (cdr lat)))))))
 
-(rempick-via-one 3 '(a b c d e))  ; (a b d e)
-(rempick-via-one 9 '(a b c d e))  ; '()
-(rempick-via-one 2 '())           ; '()
+(print '(rempick-via-one 3 '(a b c d e)))  ; (a b d e)
+(print '(rempick-via-one 9 '(a b c d e)))  ; '()
+(print '(rempick-via-one 2 '()))           ; '()
 
 
 ;;;;;;; *Oh My Gawd*: It's Full of Stars
 
-(newline) (display "*Oh My Gawd*: It's Full of Stars") (newline) (newline)
+(header "*Oh My Gawd*: It's Full of Stars")
 
 (define rember*
   (lambda (a l)
@@ -474,8 +484,8 @@
           (else (cons (car l) (rember* a (cdr l))))))
       (else (cons (rember* a (car l)) (rember* a (cdr l)))))))
 
-(rember* 'cup '((coffee) cup ((tea) cup) (and (hick)) cup))                ; ((coffee) ((tea)) (and (hick)))
-(rember* 'sauce '(((tomato) sauce) ((bean) sauce) (and ((flying) sauce)))) ; (((tomato)) ((bean)) (and ((flying))))
+(print '(rember* 'cup '((coffee) cup ((tea) cup) (and (hick)) cup)))                ; ((coffee) ((tea)) (and (hick)))
+(print '(rember* 'sauce '(((tomato) sauce) ((bean) sauce) (and ((flying) sauce))))) ; (((tomato)) ((bean)) (and ((flying))))
 
 (define insertR*
   (lambda (new old l)
@@ -487,7 +497,7 @@
           (else (cons (car l) (insertR* new old (cdr l))))))
       (else (cons (insertR* new old (car l)) (insertR* new old (cdr l)))))))
 
-(insertR* 'roast 'chuck '((how much (wood)) could ((a (wood) chuck)) (((chuck))) (if (a) ((wood chuck))) could chuck wood))
+(print '(insertR* 'roast 'chuck '((how much (wood)) could ((a (wood) chuck)) (((chuck))) (if (a) ((wood chuck))) could chuck wood)))
 ; ((how much (wood)) could ((a (wood) chuck roast)) (((chuck roast))) (if (a) ((wood chuck roast))) could chuck roast wood)
 
 ; The First Commandment
@@ -524,9 +534,9 @@
           (else (occur* a (cdr l)))))
       (else (add (occur* a (car l)) (occur* a (cdr l)))))))
 
-(occur* 'a '(a ((b) a) (c d (a) a) (a)))  ; 5
-(occur* 'a '())                           ; 0
-(occur* 'a '(b (c d (e (f)) g)))          ; 0
+(print '(occur* 'a '(a ((b) a) (c d (a) a) (a))))  ; 5
+(print '(occur* 'a '()))                           ; 0
+(print '(occur* 'a '(b (c d (e (f)) g))))          ; 0
 
 (define subst*
   (lambda (new old l)
@@ -538,9 +548,9 @@
           (else (cons (car l) (subst* new old (cdr l))))))
       (else (cons (subst* new old (car l)) (subst* new old (cdr l)))))))
 
-(subst* 'b 'a '(a (((a) b) c) (b (a) ((a) c)))) ; (b (((b) b) c) (b (b) ((b) c)))
-(subst* 'b 'a '())                              ; '()
-(subst* 'b 'a '(b (c (d (e) f) g) h))           ; (b (c (d (e) f) g) h)
+(print '(subst* 'b 'a '(a (((a) b) c) (b (a) ((a) c))))) ; (b (((b) b) c) (b (b) ((b) c)))
+(print '(subst* 'b 'a '()))                              ; '()
+(print '(subst* 'b 'a '(b (c (d (e) f) g) h)))           ; (b (c (d (e) f) g) h)
 
 (define insertL*
   (lambda (new old l)
@@ -552,9 +562,9 @@
           (else (cons old (insertL* new old (cdr l))))))
       (else (cons (insertL* new old (car l)) (insertL* new old (cdr l)))))))
 
-(insertL* 'b 'a '(a (((a) b) c) (b (a) ((a) c)))) ; (b a (((b a) b) c) (b (b a) ((b a) c)))
-(insertL* 'b 'a '())                              ; '()
-(insertL* 'b 'a '(b (c (d (e) f) g) h))           ; (b (c (d (e) f) g) h)
+(print '(insertL* 'b 'a '(a (((a) b) c) (b (a) ((a) c))))) ; (b a (((b a) b) c) (b (b a) ((b a) c)))
+(print '(insertL* 'b 'a '()))                              ; '()
+(print '(insertL* 'b 'a '(b (c (d (e) f) g) h)))           ; (b (c (d (e) f) g) h)
 
 (define member*
   (lambda (a l)
@@ -566,9 +576,9 @@
           (else (member* a (cdr l)))))
       (else (or (member* a (car l)) (member* a (cdr l)))))))
 
-(member* 'a '(a (((a) b) c) (b (a) ((a) c)))) ; true
-(member* 'a '())                              ; false
-(member* 'a '(b (c (d (e) f) g) h))           ; false
+(print '(member* 'a '(a (((a) b) c) (b (a) ((a) c))))) ; true
+(print '(member* 'a '()))                              ; false
+(print '(member* 'a '(b (c (d (e) f) g) h)))           ; false
 
 (define leftmost
   (lambda (l)
@@ -577,10 +587,10 @@
       ((atom? (car l)) (car l))
       (else (leftmost (car l))))))
 
-(leftmost '())              ; '()
-(leftmost '(a b c))         ; a
-(leftmost '((a (b)) c))     ; a
-(leftmost '('() (a (b)) c)) ; '()
+(print '(leftmost '()))              ; '()
+(print '(leftmost '(a b c)))         ; a
+(print '(leftmost '((a (b)) c)))     ; a
+(print '(leftmost '('() (a (b)) c))) ; '()
 
 ; `eqlist?` without `equals?`
 ; -----------------------------
@@ -600,10 +610,10 @@
 
 ; -----------------------------
 
-(eqlist? '(a (b)) '((a) b)) ; false
-(eqlist? '(a (b)) '(a (b))) ; true
-(eqlist? '(a b) '(a b))     ; true
-(eqlist? '() '())           ; true
+(print '(eqlist? '(a (b)) '((a) b))) ; false
+(print '(eqlist? '(a (b)) '(a (b)))) ; true
+(print '(eqlist? '(a b) '(a b)))     ; true
+(print '(eqlist? '() '()))           ; true
 
 (define eqlist?
   (lambda (l1 l2)
@@ -612,10 +622,10 @@
       ((or (null? l1) (null? l2)) #f)
       (else (and (equal? (car l1) (car l2)) (equal? (cdr l1) (cdr l2)))))))
 
-(eqlist? '(a (b)) '((a) b)) ; false
-(eqlist? '(a (b)) '(a (b))) ; true
-(eqlist? '(a b) '(a b))     ; true
-(eqlist? '() '())            ; true
+(print '(eqlist? '(a (b)) '((a) b))) ; false
+(print '(eqlist? '(a (b)) '(a (b)))) ; true
+(print '(eqlist? '(a b) '(a b)))     ; true
+(print '(eqlist? '() '()))            ; true
 
 (define equal?
   (lambda (sexp1 sexp2)
@@ -624,12 +634,12 @@
       ((or (atom? sexp1) (atom? sexp2)) #f)
       (else (eqlist? sexp1 sexp2)))))
 
-(equal? '() '())            ; true
-(equal? 'a 'a)              ; true
-(equal? '(a b) '(a b))      ; true
-(equal? '() 'a)             ; false
-(equal? 'a 'b)              ; false
-(equal? '(a (b)) '((a) b))  ; false
+(print '(equal? '() '()))            ; true
+(print '(equal? 'a 'a))              ; true
+(print '(equal? '(a b) '(a b)))      ; true
+(print '(equal? '() 'a))             ; false
+(print '(equal? 'a 'b))              ; false
+(print '(equal? '(a (b)) '((a) b)))  ; false
 
 ; The Sixth Commandment
 ;
@@ -642,16 +652,16 @@
       ((equal? s (car l)) (cdr l))
       (else (cons (car l) (rember-simplified s (cdr l)))))))
 
-(rember-simplified 'a '(a b c))      ; (b c)
-(rember-simplified 'a '(a b a c))    ; (b a c)
-(rember-simplified 'a '(b a g a c))  ; (b g a c)
-(rember-simplified 'a '(f g))        ; (f g)
-(rember-simplified 'a '())           ; '()
+(print '(rember-simplified 'a '(a b c)))      ; (b c)
+(print '(rember-simplified 'a '(a b a c)))    ; (b a c)
+(print '(rember-simplified 'a '(b a g a c)))  ; (b g a c)
+(print '(rember-simplified 'a '(f g)))        ; (f g)
+(print '(rember-simplified 'a '()))           ; '()
 
 
 ;;;;;;; Shadows
 
-(newline) (display "Shadows") (newline) (newline)
+(header "Shadows")
 
 ; Below we assume the names for the following arithmetic operations:
 ;   - plus for +
@@ -672,10 +682,10 @@
           (else #f)))
       (else (and (numbered? (car x)) (numbered? (cdr x)))))))
 
-(numbered? 4)                               ; true
-(numbered? '(3 plus (4 pow (5 times 2))))   ; true
-(numbered? '())                             ; true
-(numbered? '(3 what? (4 pow (5 times 2))))  ; false
+(print '(numbered? 4))                               ; true
+(print '(numbered? '(3 plus (4 pow (5 times 2)))))   ; true
+(print '(numbered? '()))                             ; true
+(print '(numbered? '(3 what? (4 pow (5 times 2)))))  ; false
 
 (define numbered?-per-book
   (lambda (x)
@@ -683,10 +693,10 @@
       ((atom? x) (number? x))
       (else (and (numbered?-per-book (car x)) (numbered?-per-book (car (cdr (cdr x)))))))))
 
-(numbered?-per-book 4)                                ; true
-(numbered?-per-book '(3 plus (4 pow (5 times 2))))    ; true
+(print '(numbered?-per-book 4))                                ; true
+(print '(numbered?-per-book '(3 plus (4 pow (5 times 2)))))    ; true
 ; (numbered?-per-book '())                            ; can't test, since we don't consider empty lists
-(numbered?-per-book '(3 what? (4 pow (5 times 2))))   ; false
+(print '(numbered?-per-book '(3 what? (4 pow (5 times 2)))))   ; false
 
 (define value
   (lambda (nexp)
@@ -697,11 +707,11 @@
       ((eq? (car (cdr nexp)) 'times) (times (value (car nexp)) (value (cdr (cdr nexp)))))
       (else (pow (value (car nexp)) (value (cdr (cdr nexp))))))))
 
-(value 3)                             ; 3
-(value '(3 plus 5))                   ; 8
-(value '(8 times 10))                 ; 80
-(value '(8 times (10 plus 1)))        ; 88
-(value '(2 plus (3 times (2 pow 2)))) ; 14
+(print '(value 3))                             ; 3
+(print '(value '(3 plus 5)))                   ; 8
+(print '(value '(8 times 10)))                 ; 80
+(print '(value '(8 times (10 plus 1))))        ; 88
+(print '(value '(2 plus (3 times (2 pow 2))))) ; 14
 
 ; The Seventh Commandment
 ;
@@ -719,34 +729,34 @@
       ((eq? (car aexp) 'times) (times (prefix-value (car (cdr aexp))) (prefix-value (car (cdr (cdr aexp))))))
       (else (pow (prefix-value (car (cdr aexp))) (prefix-value (car (cdr (cdr aexp)))))))))
 
-(prefix-value 7)                             ; 7
-(prefix-value '(plus 3 4))                   ; 7
-(prefix-value '(plus (times 3 2) (pow 4 2))) ; 22
-(prefix-value '(times 5 (plus 2 3)))         ; 25
+(print '(prefix-value 7))                             ; 7
+(print '(prefix-value '(plus 3 4)))                   ; 7
+(print '(prefix-value '(plus (times 3 2) (pow 4 2)))) ; 22
+(print '(prefix-value '(times 5 (plus 2 3))))         ; 25
 
 (define 1st-sub-exp
   (lambda (nexp)
     (car (cdr nexp))))
 
-(1st-sub-exp '(plus 3 4))                   ; 3
-(1st-sub-exp '(plus (times 3 2) (pow 4 2))) ; (times 3 2)
-(1st-sub-exp '(times 5 (plus 2 3)))         ; 5
+(print '(1st-sub-exp '(plus 3 4)))                   ; 3
+(print '(1st-sub-exp '(plus (times 3 2) (pow 4 2)))) ; (times 3 2)
+(print '(1st-sub-exp '(times 5 (plus 2 3))))         ; 5
 
 (define 2nd-sub-exp
   (lambda (nexp)
     (car (cdr (cdr nexp)))))
 
-(2nd-sub-exp '(plus 3 4))                   ; 4
-(2nd-sub-exp '(plus (times 3 2) (pow 4 2))) ; (pow 4 2)
-(2nd-sub-exp '(times 5 (plus 2 3)))         ; (plus 2 3)
+(print '(2nd-sub-exp '(plus 3 4)))                   ; 4
+(print '(2nd-sub-exp '(plus (times 3 2) (pow 4 2)))) ; (pow 4 2)
+(print '(2nd-sub-exp '(times 5 (plus 2 3))))         ; (plus 2 3)
 
 (define operator
   (lambda (aexp)
     (car aexp)))
 
-(operator '(plus 3 4))                    ; plus
-(operator '(plus (times 3 2) (pow 4 2)))  ; plus
-(operator '(times 5 (plus 2 3)))          ; times
+(print '(operator '(plus 3 4)))                    ; plus
+(print '(operator '(plus (times 3 2) (pow 4 2))))  ; plus
+(print '(operator '(times 5 (plus 2 3))))          ; times
 
 (define prefix-value
   (lambda (aexp)
@@ -756,36 +766,36 @@
       ((eq? (operator aexp) 'times) (times (prefix-value (1st-sub-exp aexp)) (prefix-value (2nd-sub-exp aexp))))
       (else (pow (prefix-value (1st-sub-exp aexp)) (prefix-value (2nd-sub-exp aexp)))))))
 
-(prefix-value '(plus 3 4))                   ; 7
-(prefix-value '(plus (times 3 2) (pow 4 2))) ; 22
-(prefix-value '(times 5 (plus 2 3)))         ; 25
+(print '(prefix-value '(plus 3 4)))                   ; 7
+(print '(prefix-value '(plus (times 3 2) (pow 4 2)))) ; 22
+(print '(prefix-value '(times 5 (plus 2 3))))         ; 25
 
 (define 1st-infix-sub-exp
   (lambda (nexp)
     (car nexp)))
 
-(1st-infix-sub-exp '(3 plus 5))                   ; 3
-(1st-infix-sub-exp '(8 times 10))                 ; 8
-(1st-infix-sub-exp '(8 times (10 plus 1)))        ; 8
-(1st-infix-sub-exp '(2 plus (3 times (2 pow 2)))) ; 2
+(print '(1st-infix-sub-exp '(3 plus 5)))                   ; 3
+(print '(1st-infix-sub-exp '(8 times 10)))                 ; 8
+(print '(1st-infix-sub-exp '(8 times (10 plus 1))))        ; 8
+(print '(1st-infix-sub-exp '(2 plus (3 times (2 pow 2))))) ; 2
 
 (define 2nd-infix-sub-exp
   (lambda (nexp)
     (car (cdr (cdr nexp)))))
 
-(2nd-infix-sub-exp '(3 plus 5))                   ; 5
-(2nd-infix-sub-exp '(8 times 10))                 ; 10
-(2nd-infix-sub-exp '(8 times (10 plus 1)))        ; (10 plus 1)
-(2nd-infix-sub-exp '(2 plus (3 times (2 pow 2)))) ; (3 times (2 pow 2))
+(print '(2nd-infix-sub-exp '(3 plus 5)))                   ; 5
+(print '(2nd-infix-sub-exp '(8 times 10)))                 ; 10
+(print '(2nd-infix-sub-exp '(8 times (10 plus 1))))        ; (10 plus 1)
+(print '(2nd-infix-sub-exp '(2 plus (3 times (2 pow 2))))) ; (3 times (2 pow 2))
 
 (define infix-operator
   (lambda (aexp)
     (car (cdr aexp))))
 
-(infix-operator '(3 plus 5))                    ; plus
-(infix-operator '(8 times 10))                  ; times
-(infix-operator '(8 times (10 plus 1)))         ; times
-(infix-operator '(2 plus (3 times (2 pow 2))))  ; plus
+(print '(infix-operator '(3 plus 5)))                    ; plus
+(print '(infix-operator '(8 times 10)))                  ; times
+(print '(infix-operator '(8 times (10 plus 1))))         ; times
+(print '(infix-operator '(2 plus (3 times (2 pow 2)))))  ; plus
 
 (define infix-value
   (lambda (nexp)
@@ -804,11 +814,11 @@
           (infix-value (1st-infix-sub-exp nexp))
           (infix-value (2nd-infix-sub-exp nexp)))))))
 
-(infix-value 3)                             ; 3
-(infix-value '(3 plus 5))                   ; 8
-(infix-value '(8 times 10))                 ; 80
-(infix-value '(8 times (10 plus 1)))        ; 88
-(infix-value '(2 plus (3 times (2 pow 2)))) ; 14
+(print '(infix-value 3))                             ; 3
+(print '(infix-value '(3 plus 5)))                   ; 8
+(print '(infix-value '(8 times 10)))                 ; 80
+(print '(infix-value '(8 times (10 plus 1))))        ; 88
+(print '(infix-value '(2 plus (3 times (2 pow 2))))) ; 14
 
 ; The Eighth Commandment
 ;
@@ -818,25 +828,20 @@
   (lambda (n)
     (null? n)))
 
-(display '(zro? '())) ; true
-(display (zro? '()))
-(newline) ; true
-
-(display '(zro? '(()))) ; true
-(display (zro? '(())))
-(newline) ; true
+(print '(zro? '())) ; true
+(print '(zro? '(()))) ; false
 
 (define pljusmek
   (lambda (n)
     (cons '() n)))
 
-(pljusmek '(())) ; (() ())
+(print '(pljusmek '(()))) ; (() ())
 
 (define minusmek
   (lambda (n)
     (cdr n)))
 
-(minusmek '(() ())) ; (())
+(print '(minusmek '(() ()))) ; (())
 
 (define goomar
   (lambda (a b)
@@ -844,10 +849,12 @@
       ((zro? b) a)
       (else (pljusmek (goomar a (minusmek b)))))))
 
-(goomar '(()) '(() ()))  ; (() () ())
+(print '(goomar '(()) '(() ())))  ; (() () ())
 
 
 ;;;;;;; Friends and Relations
+
+(header "Friends and Relations")
 
 (define member-via-equal?
   (lambda (a lat)
@@ -855,8 +862,8 @@
       ((null? lat) #f)
       (else (or (equal? (car lat) a) (member? a (cdr lat)))))))
 
-(member-via-equal? 'd '(a d g)) ; true
-(member-via-equal? 'd '(a g))   ; false
+(print '(member-via-equal? 'd '(a d g))) ; true
+(print '(member-via-equal? 'd '(a g)))   ; false
 
 (define set?
   (lambda (lat)
@@ -865,9 +872,9 @@
       ((member-via-equal? (car lat) (cdr lat)) #f)
       (else (set? (cdr lat))))))
 
-(set? '())      ; true
-(set? '(a b c)) ; true
-(set? '(a b b)) ; false
+(print '(set? '()))      ; true
+(print '(set? '(a b c))) ; true
+(print '(set? '(a b b))) ; false
 
 (define makeset
   (lambda (lat)
@@ -876,6 +883,6 @@
       ((member? (car lat) (cdr lat)) (makeset (cdr lat)))
       (else (cons (car lat) (makeset (cdr lat)))))))
 
-(makeset '())         ; '()
-(makeset '(a b a c))  ; (a b c)
-(makeset '(a b c))    ; (a b c)
+(print '(makeset '()))         ; '()
+(print '(makeset '(a b a c)))  ; (a b c)
+(print '(makeset '(a b c)))    ; (a b c)

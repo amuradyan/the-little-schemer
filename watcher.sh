@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 while inotifywait -e modify code.scm; do
     echo "\nCompiling" &&
