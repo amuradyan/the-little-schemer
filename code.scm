@@ -886,3 +886,94 @@
 (print '(makeset '()))         ; '()
 (print '(makeset '(a b a c)))  ; (a b c)
 (print '(makeset '(a b c)))    ; (a b c)
+
+(define subset?
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) #t)
+      ((member-via-equal? (car set1) set2) (subset? (cdr set1) set2))
+      (else #f))))
+
+(print '(subset? '() '(a b c)))               ; true
+(print '(subset? '(a b c) '(a aa b bb c cc))) ; true
+(print '(subset? '(a b c) '()))               ; false
+(print '(subset? '(d e f) '(a aa b bb c cc))) ; false
+
+(define subset-via-and?
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) #t)
+      (else (and (member-via-equal? (car set1) set2) (subset-via-and? (cdr set1) set2))))))
+
+(print '(subset-via-and? '() '(a b c)))               ; true
+(print '(subset-via-and? '(a b c) '(a aa b bb c cc))) ; true
+(print '(subset-via-and? '(a b c) '()))               ; false
+(print '(subset-via-and? '(d e f) '(a aa b bb c cc))) ; false
+
+(define eqset?
+  (lambda (set1 set2)
+    (and (subset? set2 set1) (subset? set1 set2))))
+
+(print '(eqset? '(a b) '(a b)))   ; true
+(print '(eqset? '() '(a b)))      ; false
+(print '(eqset? '(a b) '()))      ; false
+(print '(eqset? '(a b) '(a b c))) ; false
+
+(define intersect?
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) #f)
+      (else (or (member-via-equal? (car set1) set2) (intersect? (cdr set1) set2))))))
+
+(print '(intersect? '(a b c) '(c d e))) ; true
+(print '(intersect? '() '(c d e)))      ; false
+(print '(intersect? '(a b c) '(d e f))) ; false
+
+(define intersect
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) '())
+      ((member-via-equal? (car set1) set2) (cons (car set1) (intersect (cdr set1) set2)))
+      (else (intersect (cdr set1) set2)))))
+
+(print '(intersect '(a b c) '(c d e))) ; (c)
+(print '(intersect '() '(c d e)))      ; ()
+(print '(intersect '(c d e) '()))      ; ()
+(print '(intersect '(a b c) '(d e f))) ; ()
+
+(define union
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) set2)
+      ((member-via-equal? (car set1) set2) (union (cdr set1) set2))
+      (else (cons (car set1) (union (cdr set1) set2))))))
+
+(print '(union '() '()))      ; ()
+(print '(union '() '(a b c))) ; (a b c)
+(print '(union '(a b c) '())) ; (a b c)
+(print '(union '(a b) '(c)))  ; (a b c)
+
+(define difference
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) '())
+      ((member-via-equal? (car set1) set2) (difference (cdr set1) set2))
+      (else (cons (car set1) (difference (cdr set1) set2))))))
+
+(print '(difference '() '()))      ; ()
+(print '(difference '() '(a b c))) ; ()
+(print '(difference '(a b c) '())) ; (a b c)
+(print '(difference '(a b) '(c)))  ; (a b)
+
+(define intersect-all
+  (lambda (l-set)
+    (cond
+      ((null? l-set) '())
+      ((null? (cdr l-set)) (car l-set))
+      (else (intersect (car l-set) (intersect-all (cdr l-set)))))))
+
+(print '(intersect-all '()))                        ; ()
+(print '(intersect-all '((a b c))))                 ; (a b c)
+(print '(intersect-all '((a b c) (a f g))))         ; (a)
+(print '(intersect-all '((a b c) (a f g) (a r t)))) ; (a)
+(print '(intersect-all '((a b c) (d e f) (g h i)))) ; ()
