@@ -977,3 +977,107 @@
 (print '(intersect-all '((a b c) (a f g))))         ; (a)
 (print '(intersect-all '((a b c) (a f g) (a r t)))) ; (a)
 (print '(intersect-all '((a b c) (d e f) (g h i)))) ; ()
+
+(define pair?
+  (lambda (l)
+    (cond
+      ((atom? l) #f)
+      ((null? l) #f)
+      ((null? (cdr l)) #f)
+      ((null? (cdr (cdr l))) #t)
+      (else #f))))
+
+(print '(pair? 'a))         ; false
+(print '(pair? '(a)))       ; false
+(print '(pair? '()))        ; false
+(print '(pair? '(a b c)))   ; false
+(print '(pair? '(a b (c)))) ; false
+(print '(pair? '(a b)))     ; true
+(print '(pair? '(a (c))))   ; true
+(print '(pair? '((a) c)))   ; true
+
+(define first
+  (lambda (p)
+    (cond
+      ((null? p) '())
+      (else (car p)))))
+
+(print '(first '()))    ; ()
+(print '(first '(a b))) ; a
+
+(define second
+  (lambda (p)
+    (cond
+      ((null? p) '())
+      ((null? (cdr p)) '())
+      (else (car (cdr p))))))
+
+(print '(second '()))     ; ()
+(print '(second '(a)))    ; ()
+(print '(second '(a b)))  ; b
+
+(define build (lambda (f s) (cons f (cons s '()))))
+
+(print '(build 'a 'b)) ; (a b)
+
+(define third
+  (lambda (p)
+    (cond
+      ((or
+        (null? p)
+        (or (null? (cdr p))
+            (null? (cdr (cdr p))))) '())
+      (else (car (cdr (cdr p)))))))
+
+(print '(third '()))      ; ()
+(print '(third '(a)))     ; ()
+(print '(third '(a b)))   ; ()
+(print '(third '(a b c))) ; c
+
+(define fun?
+  (lambda (rel)
+    (set? (firsts rel))))
+
+(print '(fun? '((a 1) (b 2) (c 3)))) ; true
+(print '(fun? '((a 1) (b 2) (a 3)))) ; false
+
+(define revrel
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      (else (cons (build (second (car l)) (first (car l))) (revrel (cdr l)))))))
+
+(print '(revrel '((a 1) (b 2) (c 3))))  ; ((1 a) (2 b) (3 c))
+(print '(revrel '((a 1) (b 2) (c 3))))  ; ((1 a) (2 b) (3 c))
+
+(define revpair
+  (lambda (p)
+    (build (second p) (first p))))
+
+(print '(revpair '(a 1)))  ; (1 a)
+
+(define revrel-via-revpair
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      (else (cons (revpair (car l)) (revrel-via-revpair (cdr l)))))))
+
+(print '(revrel-via-revpair '((a 1) (b 2) (c 3))))  ; ((1 a) (2 b) (3 c))
+
+(define fullfun?
+  (lambda (f)
+    (fun? (revrel-via-revpair f))))
+
+(print '(fullfun? '((a 1) (b 2) (c 3)))) ; true
+(print '(fullfun? '((a 1) (b 2) (c 1)))) ; true
+(print '(fullfun? '((a 1) (b 2) (a 3)))) ; false
+
+(define seconds
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      (else (cons (second (first l)) (seconds (cdr l)))))))
+
+(print '(seconds '()))                    ; ()
+(print '(seconds '((a b) (c d) (e f))))   ; (b d f)
+(print '(seconds '(((a b) c) (d e) (f)))) ; ((a b) d ())
