@@ -1,4 +1,4 @@
-(define header
+(define section
   (lambda (caption)
     (newline)
     (display caption)
@@ -12,7 +12,7 @@
     (display (eval sexp))
     (newline)))
 
-(header "Toys")
+(section "Toys")
 
 (define atom?
   (lambda (x)
@@ -45,7 +45,7 @@
 ;   a non-numeric atom.
 
 
-(header "Do it, do it again, and again, and again ...")
+(section "Do it, do it again, and again, and again ...")
 
 (define lat?
   (lambda (x)
@@ -74,7 +74,7 @@
 
 ;;;;;;; Cons the Magnificent
 
-(header "Cons the Magnificent")
+(section "Cons the Magnificent")
 
 (define rember
   (lambda (a lat)
@@ -235,7 +235,7 @@
 
 ; ;;;;;;; Numbers Games
 
-(header "Numbers Games")
+(section "Numbers Games")
 
 (define add1
   (lambda (n) (+ n 1)))
@@ -472,7 +472,7 @@
 
 ;;;;;;; *Oh My Gawd*: It's Full of Stars
 
-(header "*Oh My Gawd*: It's Full of Stars")
+(section "*Oh My Gawd*: It's Full of Stars")
 
 (define rember*
   (lambda (a l)
@@ -661,7 +661,7 @@
 
 ;;;;;;; Shadows
 
-(header "Shadows")
+(section "Shadows")
 
 ; Below we assume the names for the following arithmetic operations:
 ;   - plus for +
@@ -854,7 +854,7 @@
 
 ;;;;;;; Friends and Relations
 
-(header "Friends and Relations")
+(section "Friends and Relations")
 
 (define member-via-equal?
   (lambda (a lat)
