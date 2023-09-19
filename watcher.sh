@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 while inotifywait -e modify code.scm; do
-    echo "\nCompiling" &&
+    echo "Compiling" &&
     csc code.scm &&
-    echo "\nCompiling done" &&
-    echo "\nRuning\n" &&
+    echo "Compiling done" &&
+    echo "Runing" &&
     ./code
 done
