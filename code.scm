@@ -1081,3 +1081,116 @@
 (print '(seconds '()))                    ; ()
 (print '(seconds '((a b) (c d) (e f))))   ; (b d f)
 (print '(seconds '(((a b) c) (d e) (f)))) ; ((a b) d ())
+
+
+;;;;;;; Friends and Relations
+
+(section "Lambda the Ultimate")
+
+(define rember-f
+  (lambda (test? a lat)
+    (cond
+      ((null? lat) '())
+      ((test? a (car lat)) (cdr lat))
+      (else (cons (car lat) (rember-f test? a (cdr lat)))))))
+
+(print '(rember-f eq? 'a '(a b c)))      ; (b c)
+(print '(rember-f eq? 'a '(a b a c)))    ; (b a c)
+(print '(rember-f eq? 'a '(b a g a c)))  ; (b g a c)
+(print '(rember-f eq? 'a '(f g)))        ; (f g)
+(print '(rember-f eq? 'a '()))           ; ()
+
+(define rember-fc
+  (lambda (test?)
+    (lambda (a lat)
+      (cond
+      ((null? lat) '())
+      ((test? a (car lat)) (cdr lat))
+      (else (cons (car lat) ((rember-fc test?) a (cdr lat))))))))
+
+(print '((rember-fc eq?) 'a '(a b c)))      ; (b c)
+(print '((rember-fc eq?) 'a '(a b a c)))    ; (b a c)
+(print '((rember-fc eq?) 'a '(b a g a c)))  ; (b g a c)
+(print '((rember-fc eq?) 'a '(f g)))        ; (f g)
+(print '((rember-fc eq?) 'a '()))           ; ()
+
+(define insertR-fc
+  (lambda (test?)
+    (lambda (new old lat)
+      (cond
+        ((null? lat) '())
+        (else
+          (cond
+          ((test? (car lat) old) (cons old (cons new (cdr lat))))
+          (else (cons (car lat) ((insertR-fc test?) new old (cdr lat))))))))))
+
+(print '((insertR-fc eq?) 'c 'b '(a b d)))     ; (a b c d)
+(print '((insertR-fc eq?) 'c 'b '(a b b d)))   ; (a b c b d)
+(print '((insertR-fc eq?) 'c 'b '()))          ; ()
+
+(define insertL-fc
+  (lambda (test?)
+    (lambda (new old lat)
+      (cond
+        ((null? lat) '())
+        (else
+          (cond
+          ((test? (car lat) old) (cons new lat))
+          (else (cons (car lat) ((insertL-fc test?) new old (cdr lat))))))))))
+
+(print '((insertL-fc eq?) 'c 'b '(a b d)))     ; (a c b d)
+(print '((insertL-fc eq?) 'c 'b '(a b b d)))   ; (a c b b d)
+(print '((insertL-fc eq?) 'c 'b '()))          ; ()
+
+(define insert-g
+  (lambda (inserter)
+    (lambda (new old lat)
+      (cond
+        ((null? lat) '())
+        (else
+          (cond
+          ((eq? (car lat) old) (inserter new old lat))
+          (else (cons (car lat) ((insert-g inserter) new old (cdr lat))))))))))
+
+(define left-inserter
+  (lambda (new old lat)
+    (cons new lat)))
+
+(define right-inserter
+  (lambda (new old lat)
+    (cons old (cons new (cdr lat)))))
+
+(print '((insert-g right-inserter) 'c 'b '(a b d)))   ; (a b c d)
+(print '((insert-g right-inserter) 'c 'b '(a b b d))) ; (a b c b d)
+(print '((insert-g right-inserter) 'c 'b '()))        ; ()
+(print '((insert-g left-inserter) 'c 'b '(a b d)))    ; (a c b d)
+(print '((insert-g left-inserter) 'c 'b '(a b b d)))  ; (a c b b d)
+(print '((insert-g left-inserter) 'c 'b '()))         ; ()
+
+(define insertR-via-insertg (insert-g right-inserter))
+
+(print '(insertR-via-insertg 'c 'b '(a b d)))     ; (a b c d)
+(print '(insertR-via-insertg 'c 'b '(a b b d)))   ; (a b c b d)
+(print '(insertR-via-insertg 'c 'b '()))          ; ()
+
+(define insertL-via-insertg (insert-g left-inserter))
+
+(print '(insertL-via-insertg 'c 'b '(a b d)))     ; (a c b d)
+(print '(insertL-via-insertg 'c 'b '(a b b d)))   ; (a c b b d)
+(print '(insertL-via-insertg 'c 'b '()))          ; ()
+
+(define replace
+  (lambda (new old lat)
+    (cons new (cdr lat))))
+
+
+(define subst-via-insertg (insert-g replace))
+
+(print '(subst 'c 'b '(a b d)))     ; (a c d)
+(print '(subst 'c 'b '(a b b d)))   ; (a c b d)
+(print '(subst 'c 'b '()))          ; ()
+
+; The Ninth Commandment
+;
+;   Abstract common patterns with a new function
+
