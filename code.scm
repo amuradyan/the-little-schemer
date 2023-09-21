@@ -1194,3 +1194,44 @@
 ;
 ;   Abstract common patterns with a new function
 
+(define atom-to-function
+  (lambda (a)
+    (cond
+      ((eq? a 'plus) add)
+      ((eq? a 'times) times)
+      (else pow))))
+
+(define prefix-value-via-atf
+  (lambda (aexp)
+    (cond
+      ((number? aexp) aexp)
+      (else
+        ((atom-to-function (operator aexp))
+          (prefix-value-via-atf (1st-sub-exp aexp))
+          (prefix-value-via-atf (2nd-sub-exp aexp)))))))
+
+(print '(prefix-value-via-atf '(plus 3 4)))                    ; 7
+(print '(prefix-value-via-atf '(plus (times 3 2) (pow 4 2))))  ; 22
+(print '(prefix-value-via-atf '(times 5 (plus 2 3))))          ; 25
+
+(define multirember-f
+  (lambda (test?)
+    (lambda (a lat)
+      (cond
+        ((null? lat) '())
+        ((test? a (car lat)) ((multirember-f test?) a (cdr lat)))
+        (else (cons (car lat) ((multirember-f test?) a (cdr lat))))))))
+
+(print '((multirember-f eq?) 'a '(a b c)))     ; (b c)
+(print '((multirember-f eq?) 'a '(a b a c)))   ; (b c)
+(print '((multirember-f eq?) 'a '(b a g a c))) ; (b g c)
+(print '((multirember-f eq?) 'a '(f g)))       ; (f g)
+(print '((multirember-f eq?) 'a '()))          ; ()
+
+(define multirember-eq? (multirember-f eq?))
+
+(print '(multirember-eq? 'a '(a b c)))     ; (b c)
+(print '(multirember-eq? 'a '(a b a c)))   ; (b c)
+(print '(multirember-eq? 'a '(b a g a c))) ; (b g c)
+(print '(multirember-eq? 'a '(f g)))       ; (f g)
+(print '(multirember-eq? 'a '()))          ; ()
