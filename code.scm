@@ -1235,3 +1235,64 @@
 (print '(multirember-eq? 'a '(b a g a c))) ; (b g c)
 (print '(multirember-eq? 'a '(f g)))       ; (f g)
 (print '(multirember-eq? 'a '()))          ; ()
+
+(define eq?-c
+  (lambda (a)
+    (lambda (b)
+      (eq? a b))))
+
+(define eq?-tuna (eq?-c 'tuna))
+
+(print '(eq?-tuna 'tuna)) ; true
+(print '(eq?-tuna 'anut)) ; false
+
+(define multirember-T
+  (lambda (test?)
+    (lambda (lat)
+      (cond
+        ((null? lat) '())
+        ((test? (car lat)) ((multirember-T test?) (cdr lat)))
+        (else (cons (car lat) ((multirember-T test?) (cdr lat))))))))
+
+(print '((multirember-T eq?-tuna) '(shrimp salad tuna saland and tuna)))
+; (shrimp salad salad and)
+
+(define multirember&co
+  (lambda (a lat col)
+    (cond
+      ((null? lat) (col '() '()))
+      ((eq? (car lat) a)
+        (multirember&co
+          a (cdr lat)
+          (lambda (newlat seen)
+            (col newlat (cons (car lat) seen)))))
+      (else
+        (multirember&co
+          a (cdr lat)
+          (lambda (newlat seen)
+            (col (cons (car lat) newlat) seen)))))))
+
+(define a-friend
+  (lambda (x y)
+    (null? y)))
+
+(print '(multirember&co 'tuna '(strawberries tuna and sandwich) a-friend))  ; false
+
+(define new-friend
+  (lambda (newlat seen)
+    (col newlat (cons (car lat) seen))))
+
+(define simplified-new-friend
+  (lambda (newlat seen)
+    (a-friend newlat (cons 'tuna seen))))
+
+(define last-friend
+  (lambda (x y)
+    (length x)))
+
+(print '(multirember&co 'tuna '(strawberries tuna and swordfish) last-friend))  ; 3
+
+; The Tenth Commandment
+;
+;   Build functions to collect more than one value at a time
+
