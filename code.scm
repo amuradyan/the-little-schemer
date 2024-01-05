@@ -1280,10 +1280,6 @@
 
 (define new-friend
   (lambda (newlat seen)
-    (col newlat (cons (car lat) seen))))
-
-(define simplified-new-friend
-  (lambda (newlat seen)
     (a-friend newlat (cons 'tuna seen))))
 
 (define last-friend
@@ -1296,3 +1292,82 @@
 ;
 ;   Build functions to collect more than one value at a time
 
+(define multiinsertLR
+  (lambda (new oldL oldR lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) oldL)
+        (cons new
+          (cons oldL (multiinsertLR new oldL oldR (cdr lat)))))
+      ((eq? (car lat) oldR)
+        (cons oldR
+          (cons new (multiinsertLR new oldL oldR (cdr lat)))))
+      (else (cons (car lat) (multiinsertLR new oldL oldR (cdr lat)))))))
+
+(print '(multiinsertLR 'c 'b 'd '(a b d)))  ; (a c b d c)
+(print '(multiinsertLR 'c 'b 'd '()))  ; ()
+
+(define multiinsertLR&co
+  (lambda (new oldL oldR lat col)
+    (cond
+      ((null? lat) (col '() 0 0))
+      ((eq? (car lat) oldL)
+        (multiinsertLR&co new oldL oldR (cdr lat)
+          (lambda (newlat L R) (col (cons new (cons oldL newlat)) (add1 L) R))))
+      ((eq? (car lat) oldR)
+        (multiinsertLR&co new oldL oldR (cdr lat)
+          (lambda (newlat L R) (col (cons oldR (cons new newlat)) L (add1 R)))))
+      (else (multiinsertLR&co new oldL oldR (cdr lat)
+        (lambda (newlat L R) (col (cons (car lat) newlat) L R)))))))
+
+(define the-last-friend
+  (lambda (a b c)
+    (cons a (cons b (cons c '())))))
+
+(print '(multiinsertLR&co 'salty 'fish 'chips '() the-last-friend))  ; (() 0 0)
+(print '(multiinsertLR&co 'salty 'fish 'chips '(chips and fish or fish and chips) the-last-friend))
+; ((chips salty and salty fish of salty fish and chips salty) 2 2)
+
+(define even?
+  (lambda (n)
+    (= (* (div n 2) 2) n)))
+
+(print '(even? 0))  ; #t
+(print '(even? 1))  ; #f
+(print '(even? 2))  ; #t
+
+(define evens-only*
+  (lambda (lat)
+    (cond
+      ((null? lat) '())
+      ((atom? (car lat))
+        (cond
+          ((even? (car lat)) (cons (car lat) (evens-only* (cdr lat))))
+          (else (evens-only* (cdr lat)))))
+      (else (cons (evens-only* (car lat)) (evens-only* (cdr lat)))))))
+
+(print '(evens-only* '()))  ; ()
+(print '(evens-only* '((9 1 2 8) 3 10 ((9 9) 7 6) 2)))  ; ((2 8) 10 (() 6) 2)
+
+(define evens-only*&co
+  (lambda (l col)
+    (cond
+      ((null? l) (col '() 1 0))
+      ((atom? (car l))
+        (cond
+          ((even? (car l))
+            (evens-only*&co (cdr l)
+              (lambda (evens even-product odd-sum)
+                (col (cons (car l) evens) (times (car l) even-product) odd-sum))))
+          (else
+            (evens-only*&co (cdr l)
+              (lambda (evens even-product odd-sum)
+                (col evens even-product (add (car l) odd-sum)))))))
+      (else (evens-only*&co (car l)
+        (lambda (a-evens a-even-product a-odd-sum)
+          (evens-only*&co (cdr l)
+            (lambda (d-evens d-even-product d-odd-sum)
+              (col (cons a-evens d-evens) (times a-even-product d-even-product) (add a-odd-sum d-odd-sum))))))))))
+
+(print '(evens-only*&co '() the-last-friend))  ; (() 1 0)
+(print '(evens-only*&co '((9 1 2 8) 3 10 ((9 9) 7 6) 2) the-last-friend))  ; (((2 8) 10 (() 6) 2) 38 1920)
