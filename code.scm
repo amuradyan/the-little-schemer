@@ -1371,3 +1371,101 @@
 
 (print '(evens-only*&co '() the-last-friend))  ; (() 1 0)
 (print '(evens-only*&co '((9 1 2 8) 3 10 ((9 9) 7 6) 2) the-last-friend))  ; (((2 8) 10 (() 6) 2) 38 1920)
+
+
+;;;;;;; ... and Again, and Again, and Again, ...
+
+(section "... and Again, and Again, and Again, ...")
+
+
+(define keep-looking
+  (lambda (spec sample-or-index set)
+    (cond
+      ((number? sample-or-index)
+        (keep-looking spec (pick sample-or-index set) set))
+      (else (eq? spec sample-or-index)))))
+
+(define looking
+  (lambda (a lat)
+    (keep-looking a (pick 1 lat) lat)))
+
+(print '(looking 'caviar '(6 2 4 caviar 5 7 3)))  ; #t
+(print '(looking 'caviar '(6 2 grits caviar 5 7 3)))  ; #f
+
+; looking is _partial_, because in some cases it won't terminate :O
+;
+; (print '(looking 'caviar '(2 1 caviar)))
+
+(define shift
+  (lambda (pair)
+    (build (first (first pair))
+      (build (second (first pair))
+        (second pair)))))
+
+(print '(shift '((a b) c))) ; (a (b c))
+(print '(shift '((a b) (c d)))) ; (a (b (c d)))
+
+(define align
+  (lambda (pora)
+    (cond
+      ((atom? pora) pora)
+      ((pair? (first pora)) (align (shift pora)))
+      (else (build (first pora) (align (second pora)))))))
+
+(print '(align '((a b) ((c d) e)))) ; (a (b (c (d e))))
+(print '(align '((((a b) c) d) e))) ; (a (b (c (d e))))
+
+(define length*
+  (lambda (pora)
+    (cond
+      ((atom? pora) 1)
+      (else (add (length* (first pora)) (length* (second pora)))))))
+
+(print '(length* '((a b) c))) ; 3
+(print '(length '((a b) c))) ; 2
+
+(define weight*
+  (lambda (pora)
+    (cond
+      ((atom? pora) 1)
+      (else (add (times 2 (weight* (first pora))) (weight* (second pora)))))))
+
+(print '(weight* '((a b) c))) ; 7
+(print '(weight* '(a (b c)))) ; 5
+
+(define shuffle
+  (lambda (pora)
+    (cond
+      ((atom? pora) pora)
+      ((pair? (first pora)) (shuffle (revpair pora)))
+      (else (build (first pora) (shuffle (second pora)))))))
+
+(print '(shuffle '((a b) c)))
+
+; (define C
+;   (lambda (n)
+;     (cond
+;       ((one? n) 1)
+;       (else
+;         (cond
+;           ((even? n) (C (div n 2)))
+;           (else (add1 (times 3 n))))))))
+
+; The function above does not yield a value for 0,
+; but otherwise we don't know if it's total.
+
+; Thanks Lothar Collatz /1910-1990/
+
+(define A
+  (lambda (n m)
+    (cond
+      ((zero? n) (add1 m))
+      ((zero? m) (A (sub1 n) 1))
+      (else (A (sub1 n) (A n (sub1 m)))))))
+
+; Wilhelm Ackerman /1835-1946/
+
+(print '(A 0 4))  ; 5
+(print '(A 1 0))  ; 2
+(print '(A 1 1))  ; 3
+(print '(A 2 2))  ; 7
