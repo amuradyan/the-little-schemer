@@ -1450,11 +1450,11 @@
 ;         (cond
 ;           ((even? n) (C (div n 2)))
 ;           (else (add1 (times 3 n))))))))
-
+;
 ; The function above does not yield a value for 0,
 ; but otherwise we don't know if it's total.
 
-; Thanks Lothar Collatz /1910-1990/
+; Thanks, Lothar Collatz /1910-1990/
 
 (define A
   (lambda (n m)
@@ -1469,3 +1469,146 @@
 (print '(A 1 0))  ; 2
 (print '(A 1 1))  ; 3
 (print '(A 2 2))  ; 7
+
+; length = 0
+
+; ((lambda (length)
+;   (lambda (l)
+;     (cond
+;       ((null? l) 0)
+;       (else (add1 (length (cdr l)))))))
+; eternity)
+
+; length < 1
+
+; (lambda (l)
+;   (cond
+;     ((null? l) 0)
+;     (else
+;       (add1
+;         ((lambda (l)
+;           (cond
+;             ((null? l) 0)
+;             (else (add1 (eternity (cdr l))))))
+;         (cdr l))))))
+
+; length < 2
+
+; (lambda (l)
+;   (cond
+;     ((null? l) 0)
+;     (else (add1
+;         ((lambda (l)
+;           (cond
+;             ((null? l) 0)
+;             (else (add1
+;               ((lambda (l)
+;                 (cond
+;                   ((null? l) 0)
+;                   (else (add1
+;                     (eternity (cdr l))))))
+;             (cdr l))))))
+;         (cdr l))))))
+
+; Just a placeholder to keep the compiler happy.
+; Pretend it goes on for eternity
+(define eternity (lambda (a) (a)))
+
+((lambda (length0)
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      (else (add1 (length0 (cdr l)))))))
+  eternity)
+
+((lambda (length-will-be-called-with-the-next-lambda-as-argument)
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      (else (add1 (length-will-be-called-with-the-next-lambda-as-argument (cdr l)))))))
+ ((lambda (length-im-the-aforementioned-argument-and-will-eat-eternity)
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      (else (add1 (length-im-the-aforementioned-argument-and-will-eat-eternity (cdr l)))))))
+  eternity))
+
+((lambda (f)
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      (else (add1 (f (cdr l)))))))
+  ((lambda (g)
+    (lambda (l)
+      (cond
+        ((null? l) 0)
+        (else (add1 (g (cdr l)))))))
+  ((lambda (h)
+    (lambda (l)
+      (cond
+        ((null? l) 0)
+        (else (add1 (h (cdr l)))))))
+  eternity)))
+
+((lambda (mk-length0)
+  (mk-length0 eternity))
+  (lambda (length)
+    (lambda (l)
+      (cond
+        ((null? l) 0)
+        (else (add1 (length (cdr l))))))))
+
+((lambda (mk-length1)
+  (mk-length1 (mk-length1 eternity)))
+  (lambda (length)
+    (lambda (l)
+      (cond
+        ((null? l) 0)
+        (else (add1 (length (cdr l))))))))
+
+((lambda (mk-length3)
+  (mk-length3
+    (mk-length3
+      (mk-length3
+        (mk-length3 eternity)))))
+  (lambda (length)
+    (lambda (l)
+      (cond
+        ((null? l) 0)
+        (else (add1 (length (cdr l))))))))
+
+((lambda (mk-length)
+  (mk-length mk-length))
+  (lambda (mk-length)
+    (lambda (l)
+      (cond
+        ((null? l) 0)
+        (else (add1 ((mk-length eternity) (cdr l))))))))
+
+(print
+  '(((lambda (mk-length)
+    (mk-length mk-length))
+    (lambda (mk-length)
+      (lambda (l)
+        (cond
+          ((null? l) 0)
+          (else (add1 ((mk-length eternity) (cdr l))))))))
+  '(apple)))  ; 1
+
+((lambda (length)
+    (length length))
+    (lambda (length)
+      (lambda (l)
+        (cond
+          ((null? l) 0)
+          (else (add1 ((length length) (cdr l))))))))
+
+(print
+  '(((lambda (length)
+    (length length))
+    (lambda (length)
+      (lambda (l)
+        (cond
+          ((null? l) 0)
+          (else (add1 ((length length) (cdr l))))))))
+  '(apple cherry pie))) ; 3
