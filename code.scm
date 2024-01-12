@@ -1510,9 +1510,9 @@
 ;             (cdr l))))))
 ;         (cdr l))))))
 
-; Just a placeholder to keep the compiler happy.
-; Pretend it goes on for eternity
-(define eternity (lambda (a) (a)))
+(define eternity (lambda () (eternity)))
+
+; No more define|s below
 
 ((lambda (length0)
   (lambda (l)
@@ -1700,3 +1700,11 @@
     ((lambda (f) (f f))
      (lambda (f)
       (le (lambda (x) ((f f) x)))))))
+
+(print
+  '((Y (lambda (length)
+        (lambda (l)
+          (cond
+            ((null? l) 0)
+            (else (add1 (length (cdr l))))))))
+  '(apple sauce))) ; 2
