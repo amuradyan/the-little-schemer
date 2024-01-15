@@ -366,10 +366,12 @@
 (define div
   (lambda (m n)
     (cond
+      ((zero? n) '())
       ((lt m n) 0)
       (else (add1 (div (sub m n) n))))))
 
 (print '(div 15 4))  ; 3
+(print '(div 15 0))  ; ()
 
 (define length
   (lambda (lat)
