@@ -1710,3 +1710,47 @@
             ((null? l) 0)
             (else (add1 (length (cdr l))))))))
   '(apple sauce))) ; 2
+
+(section "What Is the Value of All of This?")
+
+
+; These are entries: pairs of lists where the fisrt one is a set
+'((tell me more) (tell me more))
+'((apple bottom jeans) (wat wat wat))
+
+; This is also an entry, but we are not interested in ones like this.
+; We'll prefer atoms as elements in the first list of entry
+'((also (might be) this) (sure why not))
+
+(define new-entry build)
+
+(define lookup-in-entry
+  (lambda (name entry fallback)
+    (lookup-in-entry-help name
+      (first entry)
+      (second entry)
+      fallback)))
+
+(define lookup-in-entry-help
+  (lambda (name names values fallback)
+    (cond
+      ((null? names) (fallback name))
+      ((eq? name (car names)) (car values))
+      (else
+        (lookup-in-entry-help
+          name
+          (cdr names)
+          (cdr values)
+          fallback)))))
+
+(print
+  '(lookup-in-entry
+    'entrée
+    '((appetizer entrée beverage) (food tastes good))
+     (lambda (x) ('())))) ; tastes
+
+(print
+  '(lookup-in-entry
+    'butter
+    '((appetizer entrée beverage) (food tastes good))
+     zro?)) ; #f
