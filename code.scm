@@ -1754,3 +1754,144 @@
     'butter
     '((appetizer entrée beverage) (food tastes good))
      zro?)) ; #f
+
+; A table /also called an environment/ is a list of entries.
+'() ; the empty one, e.g.
+'(((one two three) (1 2 3))
+  ((uno dos tres) (one two three))
+  ((lav haskacanq) (mi ara)))
+
+(define extend-table cons)
+
+(print
+  '(extend-table '((fruit) (apple)) '((berry) (blueberry)))) ; (((fruit) (apple)) ((berry) (blueberry)))
+
+(define lookup-in-table
+  (lambda (name table fallback)
+    (cond
+      ((null? table) (fallback name))
+      (else
+        (lookup-in-entry
+          name
+          (car table)
+          (lambda (name)
+            (lookup-in-table
+              name
+              (cdr table)
+              fallback)))))))
+
+(print
+  '(lookup-in-table 'mek '(((mek erku)(erku mek)) ((mek erku)(ereq chors))) zro?))  ; erku
+(print
+  '(lookup-in-table 'kem '(((mek erku)(erku mek)) ((mek erku)(ereq chors))) zro?))  ; #f
+
+(print
+  '(cons 'car
+      (cons (cons 'quote
+        (cons
+          (cons 'a
+            (cons 'b
+              (cons 'c
+                (quote ()))))
+          (quote ())))
+        (quote ())))) ; (car (quote (a b c)))
+
+; The code below can't be evaluated yet but provides important context
+; Also, we'll use _quote_ instead of _'_ to make its' use more eye-catchy
+
+; (value (car (quote (a b c)))) ; ......... a
+; (value (quote (car (quote (a b c))))) ; . (car (quote (a b c)))
+; (value (add1 6)) ; ...................... 7
+; (value 6) ; ............................. 6
+; (value (quote nothing)) ; ............... nothing
+; (value nothing) ; ....................... nothing has no value
+
+; (value
+;   ((lambda (nothing)
+;     (cons nothing (quote ())))
+;   (quote
+;       (from nothing comes something)))) ; ((from nothing comes something))
+
+; (value
+;   ((lambda (nothing)
+;     (cond
+;       (nothing (quote something))
+;       (else (quote nothing))))
+;     #f)) ; .............................. something
+
+; (type 6)  ; ........................ *const
+; (type #f) ; ........................ *const
+; (value #f)  ; ...................... #f
+; (type cons) ; ...................... *const
+; (value car) ; ...................... (primitive car)
+; (type (quote something)) ; ......... *quote
+; (type nothing) ; ................... *identifier
+; (type (lambda (x y) (cons x y))) ; . *lambda
+
+; (type
+;   ((lambda (nothing)
+;     (cond
+;       (nothing (quote something))
+;       (else (quote nothing))))
+;     #t)) ; ......................... *application
+
+; (type
+;   (cond
+;     (nothing (quote something)
+;     (else (quote nothing))))) ; .... *cond
+
+; Overall we counted six _types_:
+;  - *const
+;  - *quote
+;  - *identifier
+;  - *lambda
+;  - *cond
+;  - *application
+
+; We can think of these types as functions\actions, that do the right thing,
+; when applied to the right type. In this case, we can re-think of the _value_
+; function as something that finds out the type of the expression it was
+; passed and uses the associated action.
+
+(define expression-to-action
+  (lambda (e)
+    (cond
+      ((atom? e) (atom-to-action e))
+      (else (list-to-action e)))))
+
+(define atom-to-action
+  (lambda (a)
+    (cond
+      ((number? a) *const)
+      ((eq? a #t) *const)
+      ((eq? a #f) *const)
+      ((eq? a 'cons) *const)
+      ((eq? a 'car) *const)
+      ((eq? a 'cdr) *const)
+      ((eq? a 'null?) *const)
+      ((eq? a 'eq?) *const)
+      ((eq? a 'atom?) *const)
+      ((eq? a 'zero?) *const)
+      ((eq? a 'number?) *const)
+      ((eq? a 'add1) *const)
+      ((eq? a 'sub1) *const)
+      (else *identifier))))
+
+(define list-to-action
+  (lambda (l)
+    (cond
+      ((atom? (car l)
+        (cond
+          ((eq? (car l) 'quote) *quote)
+          ((eq? (car l) 'lambda) *lambda)
+          ((eq? (car l) 'cond) *cond)
+          (else *application))))
+      (else *application))))
+
+(define value
+  (lambda (e)
+    (meaning e '())))
+
+(define meaning
+  (lambda (e table)
+    ((expression-to-action e) e table)))
