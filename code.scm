@@ -1895,3 +1895,63 @@
 (define meaning
   (lambda (e table)
     ((expression-to-action e) e table)))
+
+(define *const
+  (lambda (expression table)
+    (cond
+      ((number? expression) expression)
+      ((eq? expression #f) #f)
+      ((eq? expression #t) #t)
+      (else (build 'primitive expression)))))
+
+(print '(*const '#f '()))   ; #f
+(print '(*const '#t '()))   ; #t
+(print '(*const '7 '()))    ; 7
+(print '(*const 'alo '()))  ; (primitive alo)
+
+(define *quote
+  (lambda (expression table)
+    (text-of expression)))
+
+(define text-of
+  (lambda (expression)
+    (second expression)))
+
+(print '(*quote '(mi asa) '())) ; asa
+
+; Authors propose the fallback below, but that will crash, intentionally.
+; I'll use `zro?` to see it called
+;
+; (define initial-table
+;   (lambda (name)
+;     (car '())))
+
+(define *identifier
+  (lambda (identifer table)
+    (lookup-in-table identifer table zro?)))
+
+(print
+  '(*identifier 'mek '(((mek erku)(erku mek)) ((mek erku)(ereq chors)))))  ; erku
+
+(print
+  '(*identifier 'alo '(((mek erku)(erku mek)) ((mek erku)(ereq chors))))) ; #f
+
+(define *lambda
+  (lambda (expression table)
+    (build 'non-primitive (cons table (cdr expression)))))
+
+(print
+  '(*lambda '(lambda (x) x) '((('x)(2)))))  ; (non-primitive (((('x)(2))) (x) x))
+
+(define table-of first)
+
+(define formals-of second)
+
+(define body-of third)
+
+(print
+  '(table-of '(((('x)(2))) (x) x))) ; ((('x)(2)))
+(print
+  '(formals-of '(((('x)(2))) (x) x))) ; (x)
+(print
+  '(body-of '(((('x)(2))) (x) x))) ; x
