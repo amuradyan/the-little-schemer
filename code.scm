@@ -1718,7 +1718,7 @@
 ; looking is _partial_, because in some cases it won't terminate :O
 ;
 ; (print
-  '(looking 'caviar '(2 1 caviar)))
+  ; '(looking 'caviar '(2 1 caviar)))
 
 (define shift
   (lambda (pair)
@@ -2172,7 +2172,7 @@
 
 ; (type
 ;   (cond
-;     (nothing (quote something)
+;     (nothing (quote something))
 ;     (else (quote nothing))))) ; .... *cond
 
 ; Overall we counted six _types_:
@@ -2215,12 +2215,12 @@
 (define list-to-action
   (lambda (l)
     (cond
-      ((atom? (car l)
+      ((atom? (car l))
         (cond
           ((eq? (car l) 'quote) *quote)
           ((eq? (car l) 'lambda) *lambda)
           ((eq? (car l) 'cond) *cond)
-          (else *application))))
+          (else *application)))
       (else *application))))
 
 (define value
@@ -2267,8 +2267,8 @@
 ;     (car '())))
 
 (define *identifier
-  (lambda (identifer table)
-    (lookup-in-table identifer table zro?)))
+  (lambda (identifier table)
+    (lookup-in-table identifier table zro?)))
 
 (print
   '(*identifier 'mek '(((mek erku)(erku mek)) ((mek erku)(ereq chors)))))  ; erku
@@ -2295,3 +2295,44 @@
   '(formals-of '(((('x)(2))) (x) x))) ; (x)
 (print
   '(body-of '(((('x)(2))) (x) x))) ; x
+
+
+(define else?
+  (lambda (question)
+    (cond
+      ((atom? question)(eq? question 'else))
+      (else #f))))
+
+(define question-of first)
+(define answer-of second)
+
+(define evcon
+  (lambda (lines table)
+    (cond
+      ((else? (question-of (car lines)))
+        (meaning (answer-of (car lines)) table))
+      ((meaning (question-of (car lines)) table)
+        (meaning (answer-of (car lines)) table))
+      (else (evcon (cdr lines) table)))))
+
+(define cond-lines-of cdr)
+
+(define *application (lambda (x y) x))
+
+(define *cond
+  (lambda (expression table)
+    (evcon (cond-lines-of expression) table)))
+
+(print
+  '(*cond
+    '(cond
+      (nothing (quote something))
+      (else (quote nothing)))
+    '(((nothing)(#t))))) ; something
+
+(print
+  '(*cond
+    '(cond
+      (nothing (quote something))
+      (else (quote nothing)))
+    '(((nothing)(#f))))) ; nothing
