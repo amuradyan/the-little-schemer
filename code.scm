@@ -2393,9 +2393,60 @@
 
 (print
   '(non-primitive? '(primitive car)))  ; #f
-
 (print
   '(non-primitive? '()))  ; #f
-
 (print
   '(non-primitive? '(non-primitive (((('x)(2))) (x) x))))  ; #t
+
+; We consider both our function representations to be atoms, hence the new _:atom_.
+(define :atom?
+  (lambda (expression)
+    (cond
+      ((atom? expression) #t)
+      ((null? expression) #f)
+      ((eq? (car expression) 'primitive) #t)
+      ((eq? (car expression) 'non-primitive) #t)
+      (else #f))))
+
+(print
+  '(:atom? '(primitive car)))  ; #t
+(print
+  '(:atom? '(non-primitive (((('x)(2))) (x) x))))  ; #t
+(print
+  '(:atom? 'primitive))  ; #t
+(print
+  '(:atom? '('not an atom)))  ; #f
+
+; The application below has a lot of holes, e.g _null?_ in _car_ or _cdr_,
+; but it will suffice
+(define apply-primitive
+  (lambda (name values)
+    (cond
+      ((eq? name 'cons) (cons (first values) (second values)))
+      ((eq? name 'car) (car (first values)))
+      ((eq? name 'cdr) (cdr (first values)))
+      ((eq? name 'eq?) (eq? (first values) (second values)))
+      ((eq? name 'null?) (null? (first values)))
+      ((eq? name 'atom?) (:atom? (first values)))
+      ((eq? name 'zero?) (zero? (first values)))
+      ((eq? name 'add1) (add1 (first values)))
+      ((eq? name 'sub1) (sub1 (first values)))
+      ((eq? name 'number?) (number? (first values))))))
+
+; This _apply_ will fail if the expression is not a function.
+(define *apply
+  (lambda (function values)
+    (cond
+      ((primitive? function) (apply-primitive (second function) values))
+      (non-primitive? function) (apply-closure (second function) values))))
+
+(print
+  '(*apply '(primitive car) '((1 2 3)))) ; 1
+(print
+  '(*apply '(primitive cons) '(1 2))) ; (1 2)
+(print
+  '(*apply '(primitive atom?) '((primitive car))))  ; #t
+(print
+  '(*apply '(primitive atom?) '(indeed)))  ; #t
+(print
+  '(*apply '(primitive null?) '((1 2))))  ; #f
