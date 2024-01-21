@@ -2336,3 +2336,66 @@
       (nothing (quote something))
       (else (quote nothing)))
     '(((nothing)(#f))))) ; nothing
+
+(define evlist
+  (lambda (arguments table)
+    (cond
+      ((null? arguments) '())
+      (else
+        (cons
+          (meaning (car arguments) table)
+          (evlist (cdr arguments) table))))))
+
+(print
+  '(evlist '((quote x) y 8) '(((y)(7))))) ; (x 7 8)
+
+(print
+  '(evlist '() '(((y)(7))))) ; ()
+
+(define function-of car)
+(define arguments-of cdr)
+
+(define *application
+  (lambda (application table)
+    (*apply
+      (meaning (function-of application) table)
+      (evlist (arguments-of application) table))))
+
+; (print
+;   '(*application '(add x 5) '(((x add)(2 (lambda (x y) (+ x y)))))))  ; 7
+
+; There are two types of functions
+; - primitives, that are represented as (primitive _name_)
+; - non-primitives, that are represented as (non-primitive (table formals body)), these are called closure/ record/s.
+
+(define primitive?
+  (lambda (function)
+    (cond
+      ((atom? function) #f)
+      ((null? function) #f)
+      (else (eq? (first function) 'primitive)))))
+
+(print
+  '(primitive? '(primitive car)))  ; #t
+
+(print
+  '(primitive? '()))  ; #f
+
+(print
+  '(primitive? '(non-primitive (((('x)(2))) (x) x))))  ; #f
+
+(define non-primitive?
+  (lambda (function)
+    (cond
+      ((atom? function) #f)
+      ((null? function) #f)
+      (else (eq? (first function) 'non-primitive)))))
+
+(print
+  '(non-primitive? '(primitive car)))  ; #f
+
+(print
+  '(non-primitive? '()))  ; #f
+
+(print
+  '(non-primitive? '(non-primitive (((('x)(2))) (x) x))))  ; #t
