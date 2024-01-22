@@ -2460,4 +2460,11 @@
   '(apply-closure '(() (x y) (cons x y)) '(1 (2))))  ; (1 2)
 
 (print
-  '(*apply '(non-primitive (() (x y) (cons (add1 x) (cons (car (cdr y)) '())))) '(1 (2 bob #f))))  ; (2 bob)
+  '(*value 7))
+(print
+  '(*value '((lambda (x) (add1 x)) 1)))  ; 2
+(print
+  '(*value
+    '(((lambda (պոպոկ)
+        (lambda (պնդուկ)
+          (cons (add1 պոպոկ) (cons (add1 պնդուկ))))) 2) 1)))  ; (3 2)
