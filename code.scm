@@ -2223,7 +2223,7 @@
           (else *application)))
       (else *application))))
 
-(define value
+(define *value
   (lambda (e)
     (meaning e '())))
 
@@ -2361,9 +2361,6 @@
       (meaning (function-of application) table)
       (evlist (arguments-of application) table))))
 
-; (print
-;   '(*application '(add x 5) '(((x add)(2 (lambda (x y) (+ x y)))))))  ; 7
-
 ; There are two types of functions
 ; - primitives, that are represented as (primitive _name_)
 ; - non-primitives, that are represented as (non-primitive (table formals body)), these are called closure/ record/s.
@@ -2438,15 +2435,29 @@
   (lambda (function values)
     (cond
       ((primitive? function) (apply-primitive (second function) values))
-      (non-primitive? function) (apply-closure (second function) values))))
+      ((non-primitive? function) (apply-closure (second function) values)))))
 
 (print
   '(*apply '(primitive car) '((1 2 3)))) ; 1
 (print
-  '(*apply '(primitive cons) '(1 2))) ; (1 2)
+  '(*apply '(primitive cons) '(1 (2)))) ; (1 2)
 (print
   '(*apply '(primitive atom?) '((primitive car))))  ; #t
 (print
   '(*apply '(primitive atom?) '(indeed)))  ; #t
 (print
   '(*apply '(primitive null?) '((1 2))))  ; #f
+
+(define apply-closure
+  (lambda (closure values)
+    (meaning
+      (body-of closure)
+      (extend-table
+        (new-entry (formals-of closure) values)
+        (table-of closure)))))
+
+(print
+  '(apply-closure '(() (x y) (cons x y)) '(1 (2))))  ; (1 2)
+
+(print
+  '(*apply '(non-primitive (() (x y) (cons (add1 x) (cons (car (cdr y)) '())))) '(1 (2 bob #f))))  ; (2 bob)
