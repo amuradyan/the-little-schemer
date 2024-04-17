@@ -2257,7 +2257,7 @@
     (second expression)))
 
 (print
-  '(*quote '(mi asa) '())) ; asa
+  '(*quote '(mi asa) '())) ; (mi asa)
 
 ; Authors propose the fallback below, but that will crash, intentionally.
 ; I'll use `zro?` to see it called
