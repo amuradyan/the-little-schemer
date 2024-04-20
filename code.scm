@@ -2395,7 +2395,7 @@
 (print
   '(non-primitive? '(non-primitive (((('x)(2))) (x) x))))  ; #t
 
-; We consider both our function representations to be atoms, hence the new _:atom_.
+; We consider both our function representations to be atoms, hence the new _:atom?_.
 (define :atom?
   (lambda (expression)
     (cond
