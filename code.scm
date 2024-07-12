@@ -75,7 +75,7 @@
 ; The First Commandment
 ;     (preliminary)
 ;
-;   Always ask `null?` as the first questionm in expressing any function.
+;   Always ask `null?` as the first question in expressing any function.
 
 
 ;;;;;;; Cons the Magnificent
@@ -1344,7 +1344,7 @@
   '(seconds '(((a b) c) (d e) (f)))) ; ((a b) d ())
 
 
-;;;;;;; Friends and Relations
+;;;;;;; Lambda the Ultimate
 
 (section "Lambda the Ultimate")
 
